@@ -12,20 +12,6 @@ This chapter establishes the terminology and basic formal definitions for this t
 
 \section{Complex Pattern Mining: Basic Definitions}
 
-Most of the basic event terminology in this section is taken from the event processing glossary created by the Event Processing Technical Society \cite{luckham2011epts}. Note that some of the definitions may be slightly altered or simplified. This is due to the fact that the event processing technical society uses these terms for a very general description of event processing and event processing architectures and thus some original definitions are more complex than what is needed in this thesis. The definitions given here aim to establish a clear terminology for this thesis.
-
-\begin{mydef}
-\textbf{Event} An event is either something that is happening in the real world or in the context of computer science an object that represents a real world event and records its properties. The latter can also be referred to as an event object or an event tuple. Note that the term is overloaded, but the context usually gives a clear indication of what is meant.
-\end{mydef}
-
-\begin{mydef}
-\textbf{Derived Event} A derived Event or synthesized event is an event that is generated according to some method or based on some reasoning process. For example the absence measurement events of sensor A could be used to derive the event of the sensor A becoming defect.
-\end{mydef}
-
-\begin{mydef}
-\textbf{Complex Event} A complex event is a derived event that is created by combining normal events. The events can be combined by using certain operators, for example disjunction, conjunction or sequence. An example would be $(A \land B) \rightarrow C$ (event A and B in any order followed by event C).
-\end{mydef}
-
 The following definitions are not taken from the previously mentioned event processing glossary, but will still be central for the agenda of this thesis.
 
 \begin{mydef}
