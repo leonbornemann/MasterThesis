@@ -51,9 +51,6 @@ Obviously this is a very broad definition, since in most cases this function is 
 %There are however general methods to automatically transform tuples of real values to annotated events by using bagging (TODO: include a source for that). These methods create the target event type alphabet on the fly (depending on the input types). They can be useful if we know nothing about the semantics of the low level data or if there is no clear event type alphabet as the target.
 There is one more general term that is relevant for the context of this thesis. Most of the time we are not interested in the whole stream, but instead only look at a small window:
 
-\begin{mydef}
-\textbf{Time Window} Given an annotated event stream $S$ we define the Time Window $W(S_A,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the subsequence of $S_A$ that includes all events of the annotated event stream $S_A$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
-\end{mydef}
 
 In the following, whenever we speak of a stream without any further context we refer to an annotated event stream (likewise we will often only use $S$ instead of $S_A$ to denote an annotated event stream formally).
 %TODO: where to put this:

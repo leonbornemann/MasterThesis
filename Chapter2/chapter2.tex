@@ -109,13 +109,13 @@ This is a very broad definition of complex events. The choice of allowed operato
 The next notion that needs to be considered is that each individual event normally belongs to a certain class of events, which we refer to as the event type:
 
 \begin{mydef}
-textbf{Event type} The event type, sometimes also referred to as event class, event definition, or event schema is a label that identifies events as members of an event class.
+\textbf{Event type} The event type, sometimes also referred to as event class, event definition, or event schema is a label that identifies events as members of an event class.
 \end{mydef}
 
 Another important term that was not defined in the event processing glossary, but is very relevant to the topic at hand is the notion of a type alphabet:
 
 \begin{mydef}
-textbf{Type Alphabet} The event alphabet is the set of all possible event types that can occur in the observed system.
+\textbf{Type Alphabet} The event alphabet is the set of all possible event types that can occur in the observed system.
 \end{mydef}
 
 Event alphabets are often implicitly defined when mining frequent itemsets, patterns or episodes (see definition below).
@@ -136,17 +136,22 @@ Note that this rather broad definition of an event stream does not assume anythi
 
 \subsection{Event Episodes}
 
-Given an annotated stream there are multiple ways to define episodes of events. We will give two different definitions, first a very compact and formal definition and second a longer definition that is a bit more graphical and less formal.
+As already mentioned, episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
+%Given an annotated stream there are multiple ways to define episodes of events. We will give two different definitions, first a very compact and formal definition and second a longer definition that is a bit more graphical and less formal.
 
 \begin{mydef}
-\textbf{Episode} An event episode (also sometimes called episode pattern) $E$ of length $m$ (also called m-Episode) is defined as a triple: $E = (N_E,{\leq}_{E},g_E)$ where $N_E = \{n_1,...,n_m\}$ is a set of nodes, ${\leq}_{E}$ is a partial order over $N_E$ and $g_E : V_E \rightarrow \Sigma$ is a mapping that maps each node of $N_E$ to an event type. If ${\leq}_{E}$ is a total order we call $E$ a serial episode, if there is no ordering at all we call $E$ a parallel episode. Otherwise we speak of composite episodes.
+\textbf{Episode} An event episode (also sometimes called episode pattern) $E$ of length $m$ (also called m-Episode) is defined as a triple: $E = (N_E,{\leq}_{E},g_E)$ where $N_E = \{n_1,...,n_m\}$ is a set of nodes, ${\leq}_{E}$ is a partial order over $N_E$ and $g_E : V_E \rightarrow \Sigma$ is a mapping that maps each node of $N_E$ to an event type. If ${\leq}_{E}$ is a total order we call $E$ a serial episode, if there is no ordering at all we call $E$ a parallel episode. Otherwise we speak of composite episodes. TODO: add source
 \end{mydef}
 
-If we want to denote quick, simple episodes formally, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two episodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in figure TODO \newline  
-It is helpful to think of episodes as a template or pattern for concrete occurrences, which we define next:
+If we want to denote quick, simple episodes formally, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in figure TODO \newline  
+It is helpful to think of episodes as a template or pattern for concrete occurrences. In oder to define what we mean by an episode occurance, we first need to formally introduce the notion of an event sequence.
 
 \begin{mydef}
-\textbf{Episode Occurrence} An event episode $E = (N_E,{\leq}_{E},g_E)$ is said to occur in a window $W$ if events of the types that the nodes in $N_E$ are mapped to occur in $W$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=((t_1,T_1),...,(t_n,T_n))$ (which may be a Time Window, aka. a subsequence of the original stream) we can define an occurrence of $E$ as an injective Map $h:N_E \rightarrow \{1,...,n\}$, where $g_E(n_i) = T_{h(n_i)}$ and $\forall \, v,w \in V_E : v \;{\leq}_{E}\; w \implies t_{h(v)} \leq t_{h(w)}$ holds.
+\textbf{Event sequence} An event sequence is defined as an ordered list of tuples $S = ( (t_1,T_1),..., (t_n,T_n) ) $ where $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event and $T_i \in \Sigma$ is the event type of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$. 
+\end{mydef}
+
+\begin{mydef}
+\textbf{Episode Occurrence} An event episode $E = (N_E,{\leq}_{E},g_E)$ is said to occur in a sequence $S$ if events of the types that the nodes in $N_E$ are mapped to by $g_E$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=((t_1,T_1),...,(t_n,T_n))$ we can define an occurrence of $E$ as an injective Map $h:N_E \rightarrow \{1,...,n\}$, where $g_E(n_i) = T_{h(n_i)}$ and $\forall \, v,w \in V_E : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds.
 \end{mydef}
 
 For example given the high level event stream $S = [ (12,A) , (14,B) , (19,C) , (22,A), (34,D) ]$ the Episode $E = B \rightarrow A$ occurs in window $W(S,14,22)$. \newline \newline 
@@ -154,13 +159,32 @@ For example given the high level event stream $S = [ (12,A) , (14,B) , (19,C) , 
 TODO: include the more simple Definition. \newline \newline
 %For now I provide the Link to the paper where the definition is easier to understand (but of course equivalent): http://infolab.stanford.edu/~ullman/mining/episodes.pdf \newline \newline
 
+When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. In order to find an algorithm to mine frequent episodes one requires three things:
 
-Defining frequency of episodes is surprisingly complex, since different definitions have a considerable impact on potential algorithms. Thus many different definitions exist, which will be briefly presented in this section. The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
+\begin{itemize}
+	\item A definition of episode frequency
+	\item An algorithm for counting episode frequency (of concrete candidates) according to this definition
+	\item An algorithm to generate episode candidates
+\end{itemize}
+
+In contrast to the related topic of frequent itemset mining, defining frequency of episodes is surprisingly complex, since different definitions have a considerable impact on potential algorithms. Thus many different definitions exist, which will be briefly presented in this section. The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
+In order to define the window based frequency we require the notion of a window:
+
 \begin{mydef}
-\textbf{Episode Frequency - Window based Definition} Given a high level event stream $S$, a fixed window size of $w$ and an Episode $E$, we define the window based frequency $w\_freq(E)$ as the number of windows $W$ with size $w$ of $S$ in which $E$ occurs: $w\_freq(E) = |\,\{W(S,q,r) \mid r-q+1 = w \land E \;occurs\; in\; W \}\,|$.
+\textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
+\end{mydef}
+
+\begin{mydef}
+\textbf{Episode Frequency - Window based Definition} Given a high level event stream $S$, a fixed window size of $w$ and an Episode $E$, we define the window based frequency $w\_freq(E)$ as the number of windows $W$ with size $w$ of $S$ in which $E$ occurs: $w\_freq(E) = |\,\{W(S,q,r) \mid r-q+1 = w \land E \;occurs\; in\; W \}\,|$. TODO: incorporate sequence bounds and number of windows
 \end{mydef}
 
 This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. If we have a window size of $w=11$ for the previously mentioned example, we can find the Episode \textit{B after A} in the consecutive windows $W(S,12,22)$, $W(S,13,23)$ and $W(S,14,24)$, which means we will get a frequency of $3$ just for the two events $(14,B)$ and $(22,A)$. This effect obviously increases with the window size. \newline
+
+TODO: add window based frequency counting algorithm, restructure chapter
+
+
+
+
 The second definition does not require a fixed window size to be specified but instead uses the concept of minimal occurrences:
 
 \begin{mydef}
