@@ -134,7 +134,9 @@ Given that we can define an event stream:
 Note that this rather broad definition of an event stream does not assume anything about the kind of event that is contained in it. A stream can contain very basic forms of events (simple events) but can also be made up out of derived events or even complex events. 
 
 
-\subsection{Event Episodes}
+\section{Event Episodes}
+
+\subsection{Episode patterns and Occurances}
 
 As already mentioned, episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
 %Given an annotated stream there are multiple ways to define episodes of events. We will give two different definitions, first a very compact and formal definition and second a longer definition that is a bit more graphical and less formal.
@@ -146,6 +148,10 @@ As already mentioned, episodes are complex events whose basic building blocks ar
 If we want to denote quick, simple episodes formally, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in figure TODO \newline  
 It is helpful to think of episodes as a template or pattern for concrete occurrences. In oder to define what we mean by an episode occurance, we first need to formally introduce the notion of an event sequence.
 
+
+TODO: include the more simple Definition. \newline \newline
+%For now I provide the Link to the paper where the definition is easier to understand (but of course equivalent): http://infolab.stanford.edu/~ullman/mining/episodes.pdf \newline \newline
+
 \begin{mydef}
 \textbf{Event sequence} An event sequence is defined as an ordered list of tuples $S = ( (t_1,T_1),..., (t_n,T_n) ) $ where $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event and $T_i \in \Sigma$ is the event type of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$. 
 \end{mydef}
@@ -154,36 +160,128 @@ It is helpful to think of episodes as a template or pattern for concrete occurre
 \textbf{Episode Occurrence} An event episode $E = (N_E,{\leq}_{E},g_E)$ is said to occur in a sequence $S$ if events of the types that the nodes in $N_E$ are mapped to by $g_E$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=((t_1,T_1),...,(t_n,T_n))$ we can define an occurrence of $E$ as an injective Map $h:N_E \rightarrow \{1,...,n\}$, where $g_E(n_i) = T_{h(n_i)}$ and $\forall \, v,w \in V_E : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds.
 \end{mydef}
 
-For example given the high level event stream $S = [ (12,A) , (14,B) , (19,C) , (22,A), (34,D) ]$ the Episode $E = B \rightarrow A$ occurs in window $W(S,14,22)$. \newline \newline 
+\subsection{Episode Detection and general Mining Algorithm}
+When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. This is similar to all the different kinds of pattern mining algorithms, such as the Apriori algorithm for finding frequent itemsets (TODO: cite). A general algorithm for mining the episodes occuring frequently in a sequence is given in algorithm \ref{alg_generalEpisodeMining}. The algorithm is very alike the basic Apriori algorithms, since it uses a level-wise, breadth first search by first identifying all frequent episodes of a certain length $i$ and then uses these frequent episodes to generate candidates (possibly frequent episodes) of length $i+1$. In order for this to be correct episode frequency must follow the Apriori principle (TODO cite). The Apriori principle states that if a pattern is frequent all of its subpatterns (TODO: define subepisode) must be frequent, too. Intuitively one would assume that this is true for episodes but strictly speaking this depends on the definition of episode frequency. However any frequency definition of episodes that does not satisfy the apriori principle would be highly questionable to say the least. To the best of our knowledge all frequency definitions proposed in the literature satisfy the apriori principle.\newline
 
-TODO: include the more simple Definition. \newline \newline
-%For now I provide the Link to the paper where the definition is easier to understand (but of course equivalent): http://infolab.stanford.edu/~ullman/mining/episodes.pdf \newline \newline
+\begin{algorithm}[h]
+  \caption{General mining algorithm for frequent episodes
+    \label{alg_generalEpisodeMining}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Function{EpisodeMining}{}
+      \Let{$C_i$}{Episodes of Size 1} 
+      \Let{$freq$}{$\emptyset$}
+      \Let{$i$}{$1$}
+      \While{$C_i \neq \emptyset$}
+      	\State Count frequencies of each Episode $E \in C_i$
+        \Let{$L_i$}{ $\{ E \mid E \in C_i \land C_i \; is\; frequent\}$}
+        \Let{$freq$}{$freq \cup L_i$}
+        \Let{$C_{i+1}$}{Generate Episode Candidates of length $i+1$ from $L_i$}
+        \Let{$i$}{$i+1$}
+      \EndWhile
+      \State \Return{$freq$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
 
-When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. In order to find an algorithm to mine frequent episodes one requires three things:
+
+In summary, the general mining algorithm for frequent episodes requires:
 
 \begin{itemize}
-	\item A definition of episode frequency
+	\item A definition of episode frequency, that does not violate the apriori principle
 	\item An algorithm for counting episode frequency (of concrete candidates) according to this definition
 	\item An algorithm to generate episode candidates
 \end{itemize}
 
-In contrast to the related topic of frequent itemset mining, defining frequency of episodes is surprisingly complex, since different definitions have a considerable impact on potential algorithms. Thus many different definitions exist, which will be briefly presented in this section. The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
-In order to define the window based frequency we require the notion of a window:
+It may be a bit confusing that we need a definition of episode frequency for such a mining algorithm. Since we have already defined what an occurrence of an episode looks like it would seem that counting all occurrences of an episode would yield its frequency. While this is a possible definition of frequency, it is important to note that finding all occurrences of an episode within a sequence is neither practical nor useful. An example will demonstrate the problem with this. Consider the simple serial episode $A \rightarrow B$ and a sequence of length $2\cdot n$ which repeats the subsequence $(A,B)$ $n$ times. One quickly realizes that the number of episode occurrences is very large due to the possibility of overlapping episode occurrences. In this particular case there are already $ \frac{n \cdot (n+1)}{2}$ possible occurrences. This number swiftly increases with the size of the episode pattern, since it introduces more degrees of freedom (TODO: better word). In fact the number of possible occurrences of a serial episode in a fixed length sequence increases exponentially with the size of the episode (TODO: If I claim this I need to prove it, right?). Naturally the number of possible parallel and composite episode occurrences is even larger, since they are less restrictive in the order of the events.\newline
+This leads to various frequency definitions of episodes in the literature, which will be dealt with in the following sections (TODO: mention the sections). Each frequency definition comes with its own frequency counting algorithm. The algorithm for generating candidates is independent of the frequency definition and is present in (TODO: refer to section for that) \newline
+%The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
+
+
+\subsection{Window based frequency}
+
+To the best of our knowledge the window based frequency was the first frequency definition for episodes to gain general popularity. It was conceived by Mannila et. al. \cite{mannila1995discovering}, although the frequency counting algorithms were only mentioned in text form. The same authors  specified the algorithms in a later paper \cite{mannila1997discovery}, which acts as the primary source for the overview given in this subsection. In order to define the window based frequency we first need the notion of a time window: 
 
 \begin{mydef}
 \textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
 \end{mydef}
 
+TODO: nice picture visualizing the different windows 
+
 \begin{mydef}
-\textbf{Episode Frequency - Window based Definition} Given a high level event stream $S$, a fixed window size of $w$ and an Episode $E$, we define the window based frequency $w\_freq(E)$ as the number of windows $W$ with size $w$ of $S$ in which $E$ occurs: $w\_freq(E) = |\,\{W(S,q,r) \mid r-q+1 = w \land E \;occurs\; in\; W \}\,|$. TODO: incorporate sequence bounds and number of windows
+\textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window size of $w$ and an Episode $E$, we define the window based frequency $w\_freq(E)$ as the number of windows $W$ with size $w$ of $S$ in which $E$ occurs: $w\_freq(E) = |\,\{W(S,q,r) \mid r-q+1 = w \land E \;occurs\; in\; W \}\,|$. TODO: incorporate sequence bounds and number of windows
 \end{mydef}
 
-This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. If we have a window size of $w=11$ for the previously mentioned example, we can find the Episode \textit{B after A} in the consecutive windows $W(S,12,22)$, $W(S,13,23)$ and $W(S,14,24)$, which means we will get a frequency of $3$ just for the two events $(14,B)$ and $(22,A)$. This effect obviously increases with the window size. \newline
+For example given a sequence $S = [ (12,A) , (14,B) , (19,C) , (22,A), (34,D) ]$ the Episode $E = B \rightarrow A$ occurs in window $W(S,14,22)$. \newline \newline 
+This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. If we have a window size of $w=11$ for the previously mentioned example, we can find the Episode \textit{B after A} in the consecutive windows $W(S,12,22)$, $W(S,13,23)$ and $W(S,14,24)$, which means we will get a frequency of $3$ just for the two events $(14,B)$ and $(22,A)$. This effect obviously increases with the window size. Note that for each episode $E$ we only count one occurrence per window $W$, no matter how many occurrences of $E$ there are in $W$.\newline
+When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent though, it is possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes are given in algorithm \ref{alg_windowBasedParallel} and algorithm TODO respectively.
+
+TODO: window based algorithm for parallel is absolutely awful to read and may even be wrong
+
+
+
+Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel (TODO: cite). However they do not specify and algorithm for doing this.
 
 TODO: add window based frequency counting algorithm, restructure chapter
 
+\begin{algorithm}[h]
+  \caption{Calculate Window based Frequency for parallel Episodes
+    \label{alg_windowBasedParallel}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Function{EpisodeMining}{}
+      \For{each $\alpha \in C$}
+      	\For{each $A \in \alpha$}
+      		\Let{$A.count$}{$0$}
+      		\For{$i \in \{1,...,|\alpha |\}$}
+      			\Let{$contains(A,i)$}{$\emptyset$}
+      		\EndFor
+      	\EndFor
+      \EndFor
+      \For{each $\alpha \in C$}
+      	\For{each $A \in \alpha$}
+      		\Let{$a$}{number of events of type $A$ in $\alpha$}
+      		\Let{$contains(A,a)$}{$contains(A,a) \cup \{\alpha \}$}
+      	\EndFor
+      	\Let{$\alpha .eventCount$}{$0$}
+      	\Let{$\alpha .freq$}{$0$}
+      \EndFor
+      \For{$start \gets t_s - win +1 \textrm{ to } t_e$}
+      	\For{each $(t,A) \in S $ where $t = start+win-1$}
+      		\Let{$A.count$}{$A.count +1$}
+      		\For{each $\alpha \in contains(A,A.count)$}
+      			\Let{$\alpha .eventCount$}{$\alpha .eventCount + A.count$}
+      			\If{$\alpha .eventCount = |\alpha | $}
+          			\Let{$\alpha .inwindow$}{$start$}
+       			\EndIf
+      		\EndFor
+ 		\EndFor
+ 		\For{each $(t,A) \in S $ where $t = start-1$}
+ 			\For{each $\alpha \in contains(A,A.count)$}
+ 				\If{$\alpha .eventCount = |\alpha | $}
+          			\Let{$\alpha .freq$}{$\alpha .freq + \alpha .inwindow -start $}
+       			\EndIf
+       			\Let{$\alpha .eventCount$}{$\alpha .eventCount - A.count$}
+ 			\EndFor
+ 			\Let{$A.count$}{$A.count -1$}
+ 		\EndFor
+      \EndFor
+      %\Let{$freq$}{$\emptyset$}
+      %\Let{$i$}{$1$}
+      %\While{$C_i \neq \emptyset$}
+      	%\State Count frequencies of each Episode $E \in C_i$
+       % \Let{$L_i$}{ $\{ E \mid E \in C_i \land C_i \; is\; frequent\}$}
+       % \Let{$freq$}{$freq \cup L_i$}
+       % \Let{$C_{i+1}$}{Generate Episode Candidates of length $i+1$ from $L_i$}
+        %\Let{$i$}{$i+1$}
+      %\EndWhile
+      \State \Return{$\{\alpha \mid \alpha \in C \land \frac{\alpha.freq}{t_e - t_s + win -1} \geq minS\}$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
 
 
+\subsection{Minimal Occurance based frequency}
 
 The second definition does not require a fixed window size to be specified but instead uses the concept of minimal occurrences:
 
@@ -194,6 +292,9 @@ The second definition does not require a fixed window size to be specified but i
 \begin{mydef}
 \textbf{Episode Frequency - Minimal Occurrence based Definition} Given a high level event stream $S$ and an Episode $E$, we define the minimal occurrence based frequency $mo\_freq(E)$ as the number of minimal occurrences of $E$ in $S$.
 \end{mydef}
+
+
+\subsection{Non-Overlapping Occurances}
 
 The third definition introduces the concept of non-overlapping occurrences:
 
@@ -213,6 +314,7 @@ This leads to the Definition:
 \end{mydef}
 
 
+\subsection{Summary}
 
 When looking at these definitions it is not clear whether any of these is always superior to or more useful than the other since they have different properties. We mention them briefly:
 
