@@ -39,7 +39,7 @@ In contrast to other regression and forecasting methods, such as artificial neur
 The rest of the thesis is outlined as follows: Chapter \ref{chapter_related} introduces the basic terminology, reviews the related work, and gives a detailed, formal introduction to episode mining. Chapter \ref{chapter_method} presents the suggested algorithm to mine predictive episodes from event streams in detail and analyzes its complexity. Subsequently chapter \ref{chapter_evaluation} presents an evaluation using both synthetically generated data, as well as real stock market data. Finally chapter \ref{chapter_conclusion} concludes the paper and mentions possible future work.
 
 \section{Problem Definition and Exact Research Question}
-Even though many terms have not yet been precisely defined (which will be done in \ref{chapter_related} ) this section presents a loose, intuitive definition of the problem to be tackled by this thesis. Given a stream of basic events and a special event type $P$ one is interested to predict occurrences of that special event type $P$ in the stream, so that actions can be taken before $P$ actually occurs. For this purpose we are interested to discover episodes in the stream of which occurrences are likely to be followed by $P$. A window of an example stream is visualized in figure \ref{fig_predictiveEpisodeExample}.
+Even though many terms have not yet been precisely defined (which will be done in chapter \ref{chapter_related} ) this section presents a loose, intuitive definition of the problem to be tackled by this thesis. Given a stream of basic events and a special event type $P$ one is interested to predict occurrences of that special event type $P$ in the stream, so that actions can be taken before $P$ actually occurs. For this purpose we are interested to discover episodes in the stream of which occurrences are likely to be followed by $P$. A window of an example stream is visualized in figure \ref{fig_predictiveEpisodeExample}.
 
 \begin{figure}[h]
 	\centering
@@ -48,7 +48,7 @@ Even though many terms have not yet been precisely defined (which will be done i
 	\label{fig_predictiveEpisodeExample}
 \end{figure}
 
-Note that it is very important to the mining process how much time is allowed to pass between the occurrence of the predicting episode and the event that is to predict. If this time span is too small a mining algorithm might not be any good predictors. If the timespan is too large a mining algorithm might be overwhelmed by the number of candidates that need to be considered, since the more time may pass the larger are the sequences before each event $P$ that must be considered. %TODO maybe move the last sentences to method? 
+Note that it is very important to the mining process how much time is allowed to pass between the occurrence of the predicting episode and the event that is to predict. If this time span is too small a mining algorithm might not find reliable predictors. If the timespan is too large a mining algorithm might be overwhelmed by the number of candidates that need to be considered, since the more time may pass the larger are the sequences before each event $P$ that must be considered. %TODO maybe move the last sentences to method? 
 \newline
 To solve the problem outlined above a semantic mining algorithm will be suggested in this thesis. Since the underlying data structure to be analyzed are data streams, the algorithm must have the following properties:
 \begin{itemize}
@@ -57,7 +57,5 @@ To solve the problem outlined above a semantic mining algorithm will be suggeste
 	\item The Algorithm must not require to store the entire stream of events seen so far, since that is not feasible for most streams.
 \end{itemize}
 
-The algorithm will be evaluated on both synthetically generated data and real-life data-sets. The latter ones will be from the domain of stock market prediction, in which the developed algorithm will be empirically compared to other approaches in terms of accuracy measures and execution time.
-
-In summary the research question in particular is:\newline \newline
+The algorithm will be evaluated on both synthetically generated data and real-life data-sets. The latter ones will be from the domain of stock market prediction, in which the developed algorithm will be empirically compared to other approaches in terms of accuracy measures and execution time. In summary the research question in particular is:\newline \newline
 \textbf{How can event streams be mined for episodes that effectively predict certain event types and how can domain knowledge be used to improve the results or speed of the mining algorithm?}
