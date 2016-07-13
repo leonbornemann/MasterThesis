@@ -1,131 +1,163 @@
 % ******************************* Thesis Appendix A ****************************
-\chapter{How to install \LaTeX} 
+\chapter{Episode Mining} 
 
-\section*{Windows OS}
+\section{Window-Based Frequency Counting Algorithms}
+\label{app_freqCounting}
+The algorithms to determine the window based frequency of serial and parallel episodes are given in algorithm \ref{alg_windowBasedParallel} and \ref{alg_windowBasedSerial} respectively. The basic ideas are described in the respective sections. The source for both algorithms is the paper published by Mannila et. al. \cite{mannila1997discovery}.
 
-\subsection*{TeXLive package - full version}
-\begin{enumerate}
-\item	Download the TeXLive ISO (2.2GB) from\\
-\href{https://www.tug.org/texlive/}{https://www.tug.org/texlive/}
-\item	Download WinCDEmu (if you don't have a virtual drive) from \\
-\href{http://wincdemu.sysprogs.org/download/}
-{http://wincdemu.sysprogs.org/download/}
-\item	To install Windows CD Emulator follow the instructions at\\
-\href{http://wincdemu.sysprogs.org/tutorials/install/}
-{http://wincdemu.sysprogs.org/tutorials/install/}
-\item	Right click the iso and mount it using the WinCDEmu as shown in \\
-\href{http://wincdemu.sysprogs.org/tutorials/mount/}{
-http://wincdemu.sysprogs.org/tutorials/mount/}
-\item	Open your virtual drive and run setup.pl
-\end{enumerate}
+\subsection{Frequency Counting of Parallel Episodes}
+The algorithm for counting the frequency of parallel episodes uses the following data structures and variables:
 
-or
+\begin{itemize}
+	\item For each event type $A$ store the number of occurrences of this event in the current window in $A.count$
+	\item For each episode $\alpha$ store 
+	\begin{itemize}
+		\item $\alpha .freq$ - the number of windows in which alpha occurred so far
+		\item $\alpha. eventCount$ - the number of events of $alpha$ that are present in the current window
+		\item $\alpha. inwindow$ - this variable gets set to the current time whenever $\alpha$ becomes fully present ($alpha .eventCount = |\alpha |$).
+	\end{itemize}
+	\item additionally maintain $contains$ which is a set of sets. Each set in $contains$ is identified by a tuple $(T,i)$, where $T \in \Sigma$ is an event type and $i \in \mathbb{N}^+$. These sets are referred to as $contains(T,n)$. The set $contains(T,n)$ contains all candidate parallel episodes, which contain the event type $T$ exactly $n$ times. This is done to be able to efficiently access candidates, when certain events enter or leave the window.
+\end{itemize}
 
-\subsection*{Basic MikTeX - \TeX~ distribution}
-\begin{enumerate}
-\item	Download Basic-MiK\TeX (32bit or 64bit) from\\
-\href{http://miktex.org/download}{http://miktex.org/download}
-\item	Run the installer 
-\item	To add a new package go to Start >> All Programs >> MikTex >> Maintenance (Admin) and choose Package Manager
-\item	Select or search for packages to install
-\end{enumerate}
+The algorithm works as follows. First the above mentioned variables and index structures are initialized. Subsequently we perform the main loop which iterates through every point of time between the start and the end time of the sequence (TODO: they start earlier for some reason?). Essentially each iteration is sliding the window one step forwards. The only two things that need to be handled inside the loop are new events coming into the window and old events dropping out of the sliding window. If a new event comes in its count gets updated and each episode $\alpha$ that is affected by this will get its event count updated and, if it is completed, the current time will be saved in $\alpha. inwindow$. \newline
+If an event $A$ drops out of the window, for all episodes $\alpha$ that occurred in the previous window(s) and now no longer have an occurrence in the current window (by losing $A$) the number of windows they were present in gets added to $\alpha .freq$.
 
-\subsection*{TexStudio - \TeX~ editor}
-\begin{enumerate}
-\item	Download TexStudio from\\
-\href{http://texstudio.sourceforge.net/\#downloads}
-{http://texstudio.sourceforge.net/\#downloads} 
-\item	Run the installer
-\end{enumerate}
+\begin{algorithm}[H]
+  \caption{Calculate Window based Frequency for parallel Episodes
+    \label{alg_windowBasedParallel}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $C$ be the set of candidate parallel episodes, and let $S=[(T_1,t_s),...,(T_n,t_e)]$ be a sequence of events, let $win$ be the window size and finally let $minS$ be the minimum support.
+      \State \textit{// Initialization}
+      \For{each $\alpha \in C$}
+      	\For{each $A \in \alpha$}
+      		\Let{$A.count$}{$0$}
+      		\For{$i \in \{1,...,|\alpha |\}$}
+      			\Let{$contains(A,i)$}{$\emptyset$}
+      		\EndFor
+      	\EndFor
+      \EndFor
+      \For{each $\alpha \in C$}
+      	\For{each $A \in \alpha$}
+      		\Let{$a$}{number of events of type $A$ in $\alpha$}
+      		\Let{$contains(A,a)$}{$contains(A,a) \cup \{\alpha \}$}
+      	\EndFor
+      	\Let{$\alpha .eventCount$}{$0$}
+      	\Let{$\alpha .freq$}{$0$}
+      \EndFor
+      \State \textit{// Recognition}
+      \For{$start \gets t_s - win +1 \textrm{ to } t_e$}
+      	\State \textit{//Bring new events to the window}
+      	\For{each $(t,A) \in S $ where $t = start+win-1$}
+      		\Let{$A.count$}{$A.count +1$}
+      		\For{each $\alpha \in contains(A,A.count)$}
+      			\Let{$\alpha .eventCount$}{$\alpha .eventCount + A.count$}
+      			\If{$\alpha .eventCount = |\alpha | $}
+          			\Let{$\alpha .inwindow$}{$start$}
+       			\EndIf
+      		\EndFor
+ 		\EndFor
+ 		\State \textit{// Drop old events out of the window}
+ 		\For{each $(t,A) \in S $ where $t = start-1$}
+ 			\For{each $\alpha \in contains(A,A.count)$}
+ 				\If{$\alpha .eventCount = |\alpha | $}
+          			\Let{$\alpha .freq$}{$\alpha .freq + \alpha .inwindow -start $}
+       			\EndIf
+       			\Let{$\alpha .eventCount$}{$\alpha .eventCount - A.count$}
+ 			\EndFor
+ 			\Let{$A.count$}{$A.count -1$}
+ 		\EndFor
+      \EndFor
+      %\Let{$freq$}{$\emptyset$}
+      %\Let{$i$}{$1$}
+      %\While{$C_i \neq \emptyset$}
+      	%\State Count frequencies of each Episode $E \in C_i$
+       % \Let{$L_i$}{ $\{ E \mid E \in C_i \land C_i \; is\; frequent\}$}
+       % \Let{$freq$}{$freq \cup L_i$}
+       % \Let{$C_{i+1}$}{Generate Episode Candidates of length $i+1$ from $L_i$}
+        %\Let{$i$}{$i+1$}
+      %\EndWhile
+      \State \Return{$\{\alpha \mid \alpha \in C \land \frac{\alpha.freq}{t_e - t_s + win -1} \geq minS\}$}
+  \end{algorithmic}
+\end{algorithm}
 
-\section*{Mac OS X}
-\subsection*{MacTeX - \TeX~ distribution}
-\begin{enumerate}
-\item	Download the file from\\
-\href{https://www.tug.org/mactex/}{https://www.tug.org/mactex/}
-\item	Extract and double click to run the installer. It does the entire configuration, sit back and relax.
-\end{enumerate}
+\subsection{Frequency Counting of serial Episodes}
+The basic idea when determining the window based frequency of serial episodes is that a serial episodes can be recognized by using automaton that accepts the events of its corresponding serial episode in exactly the specified order and ignores all other input. For each serial episode $\alpha$ there can be several instances of the recognizing automaton (in different states) at the same time. This is necessary in order to replace old occurrences with newer ones whenever possible. The algorithm for counting the frequency of serial episodes uses the following data structures and variables: %TODO figure visualizing automata
 
-\subsection*{TexStudio - \TeX~ editor}
-\begin{enumerate}
-\item	Download TexStudio from\\
-\href{http://texstudio.sourceforge.net/\#downloads}
-{http://texstudio.sourceforge.net/\#downloads} 
-\item	Extract and Start
-\end{enumerate}
+\begin{itemize}
+	 \item Each episode $\alpha$ is represented as an array in which the event types contained in $\alpha$ are stored in the correct order
+	\item For each episode $\alpha$ the number of windows in which alpha occurred so far is stored in $\alpha .freq$
+	\item An automaton is simply represented by a tuple $(\alpha ,i)$, where $\alpha$ is the corresponding candidate serial episode and $i \in \{1,...,|\alpha |\}$ is the state (position in the episode) in which the automaton currently is.
+	\item The automata are grouped by the event type that will allow them to perform the next transition. These lists are referred to as $waits(T)$, where $T \in \Sigma$ is an event type.
+	\item For each automata belonging to episode $\alpha$ that is currently in state $i$, the time at which it this automaton was initialized is stored in $\alpha .initialized[i]$.
+	\item Additionally any automata that were initialized at point of time $t$ will be contained in a list referred to as $beginsat(t)$.
+	\item transitions to be made are stored in a list named transitions and are stored in the form $(\alpha ,i,t)$, where $\alpha$ is the corresponding episode, $i$ is the index of the state from which the automaton will transition to the next one and $t$ is the time in which this automaton was initialized.
+\end{itemize}
 
-
-\section*{Unix/Linux}
-\subsection*{TeXLive - \TeX~ distribution}
-\subsubsection*{Getting the distribution:}
-\begin{enumerate}
-\item	TexLive can be downloaded from\\
-\href{http://www.tug.org/texlive/acquire-netinstall.html}
-{http://www.tug.org/texlive/acquire-netinstall.html}.
-\item	TexLive is provided by most operating system you can use (rpm,apt-get or yum) to get TexLive distributions
-\end{enumerate}
-
-\subsubsection*{Installation}
-\begin{enumerate}
-\item	Mount the ISO file in the mnt directory
-\begin{verbatim}
-mount -t iso9660 -o ro,loop,noauto /your/texlive####.iso /mnt
-\end{verbatim}
-
-\item	Install wget on your OS (use rpm, apt-get or yum install)
-\item	Run the installer script install-tl.
-\begin{verbatim}
-	cd /your/download/directory
-	./install-tl
-\end{verbatim}
-\item	Enter command `i' for installation
-
-\item	Post-Installation configuration:\\
-\href{http://www.tug.org/texlive/doc/texlive-en/texlive-en.html\#x1-320003.4.1}
-{http://www.tug.org/texlive/doc/texlive-en/texlive-en.html\#x1-320003.4.1} 
-\item	Set the path for the directory of TexLive binaries in your .bashrc file
-\end{enumerate}
-
-\subsubsection*{For 32bit OS}
-For Bourne-compatible shells such as bash, and using Intel x86 GNU/Linux and a default directory setup as an example, the file to edit might be \begin{verbatim}
-edit $~/.bashrc file and add following lines
-PATH=/usr/local/texlive/2011/bin/i386-linux:$PATH; 
-export PATH 
-MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH;
-export MANPATH 
-INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH;
-export INFOPATH
-\end{verbatim}
-\subsubsection*{For 64bit OS}
-\begin{verbatim}
-edit $~/.bashrc file and add following lines
-PATH=/usr/local/texlive/2011/bin/x86_64-linux:$PATH;
-export PATH 
-MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH;
-export MANPATH 
-INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH;
-export INFOPATH
-
-\end{verbatim}
+The structure of the algorithm is the same as the one of algorithm \ref{alg_windowBasedParallel}. First the variables are initialized, then the sequence is looped over and the sliding window moves by one time unit in each iteration. A new instance of an automaton is initialized, whenever an event $A$ is the first event of an episode and enters the window. Additionally all automata that wait for $A$ will be moved to the next state, while memorizing their initial starting time. If an automaton of episode $\alpha$ moves to a state which is already occupied by another automaton, the old automaton is discarded (since the newer one has a later starting time and thus will be present in more windows). If an automaton reaches its final state the current time is memorized in $\alpha .inwindow$. If an automaton in its final state expires (its starting time drops out of the window) the number of windows it was present in is added to its corresponding sequence.
 
 
+\begin{algorithm}[H]
+	\caption{Calculate Window based Frequency for serial Episodes
+    \label{alg_windowBasedSerial}}
+  	\begin{algorithmic}[1]
+    	\Statex
+    	\Require Let $C$ be the set of candidate serial episodes, and let $S=[(T_1,t_s),...,(T_n,t_e)]$ be a sequence of events, let $win$ be the window size and finally let $minS$ be the minimum support. TODO: part of the algorithm is cut off
+      	\State \textit{// Initialization}
+      	\For{each $\alpha \in C$}
+      		\For{$i \in \{1,...,|\alpha |\}$}
+      			\Let{$\alpha .initialized[i]$}{$0$}
+      			\Let{$waits(\alpha [i])$}{$\emptyset$}
+      		\EndFor
+      	\EndFor
+      	\For{each $\alpha \in C$}
+      		\Let{$waits(\alpha [1])$}{$waits(\alpha [1]) \cup \{(\alpha ,1)\}$}
+      		\Let{$\alpha .freq$}{$0$}
+      	\EndFor
+      	\For{$i \in \{t_s -win,...,t_s -1\}$}
+      		\Let{$beginsat(t)$}{$\emptyset$}
+      	\EndFor
+      	\State \textit{// Recognition}
+     	\For{$start \gets t_s - win +1 \textrm{ to } t_e$}
+     		\State \textit{//Bring new events to the window}
+	    	\Let{$beginsat(start +win -1)$}{$\emptyset$}  
+      		\Let{$transitions$}{$\emptyset$}
+			\For{each $(t,A) \in S $ where $t = start+win-1$}
+				\For{each $(\alpha ,j) \in waits(A)$}
+					\If{$j = |\alpha | \land  \alpha .initialized[j] = 0$}
+          				\Let{$\alpha .inwindow$}{$start$}
+       				\EndIf
+       				\If{$j = 1$}
+       					\Let{$transitions$}{$transitions \cup \{(\alpha ,1, start+win-1 \}$}
+       				\Else
+       					\Let{$transitions$}{$transitions \cup \{(\alpha ,j, initialized[j-1]) \}$}
+						\State Remove $(\alpha, j-1)$ from $beginsat(\alpha .initialized[j-1])$
+						\Let{$\alpha .initialized[j-1]$}{$0$}
+						\State Remove $(\alpha, j)$ from $waits(A)$
+       				\EndIf	
+       			\EndFor
+			\EndFor      		
+      		\For{each $(\alpha ,j,t) \in transitions$}
+      			\Let{$\alpha .initialized[j]$}{$t$}
+      			\Let{$beginsat(t)$}{$beginsat(t) \cup \{(\alpha ,j)\}$}
+      			\If{$j \le |\alpha |$}
+      				\Let{$waits(\alpha [j+1])$}{$waits(\alpha [j+1]) \cup \{(\alpha , j+1)\}$}
+      			\EndIf
+      		\EndFor
+      		\State \textit{// Drop old events out of the window}
+      		\For{each $(\alpha ,l) \in beginsat(start-1)$}
+      			\If{$l = |\alpha |$}
+      				\Let{$\alpha .freq$}{$\alpha .freq + start - \alpha .inwindow$}
+				\Else
+					\State Remove $(\alpha, l+1)$ from $waits(\alpha [l+1])$      			
+      				\Let{$\alpha .initialized[l]$}{$0$}
+      			\EndIf
+      		\EndFor
+      	\EndFor
+      	\State \Return{$\{\alpha \mid \alpha \in C \land \frac{\alpha.freq}{t_e - t_s + win -1} \geq minS\}$}
+  \end{algorithmic}
+\end{algorithm}
 
-%\subsection{Installing directly using Linux packages} 
-\subsubsection*{Fedora/RedHat/CentOS:}
-\begin{verbatim} 
-sudo yum install texlive 
-sudo yum install psutils 
-\end{verbatim}
+%TODO: discuss complexity \newline
 
-
-\subsubsection*{SUSE:}
-\begin{verbatim}
-sudo zypper install texlive
-\end{verbatim}
-
-
-\subsubsection*{Debian/Ubuntu:}
-\begin{verbatim} 
-sudo apt-get install texlive texlive-latex-extra 
-sudo apt-get install psutils
-\end{verbatim}
+Naturally there are enhancements to these algorithms. For example both counting algorithms iterate over each point of time $t$ between the start and end time of the sequence, regardless of the fact that there might not be anything to do at this point of time (no event drops out of the window and no new event comes in). Especially if the sequence of events is sparse, meaning that the time between events is usually large, this will become problematic. This issue can be fixed rather easily: instead of increasing $start$ by one in each iteration, one can increase start by the amount of time that is needed until a change in the window occurs and update the data structures accordingly. \newline
