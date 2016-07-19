@@ -34,13 +34,13 @@ Put more simply an episode is a multiset of event types, whose elements can be, 
 \textbf{Parallel Episode} An episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is called a parallel episode if ${\leq}_{\alpha} = \emptyset$, in other words if there is no ordering imposed on $V_\alpha$ at all \cite{mannila1995discovering}.
 \end{mydef}
 
-Essentially, serial episodes are sequences, while parallel episodes are multisets. Figure \ref{fig_exampleEpisodes} visualizes example episodes in the same way that we have visualized episodes in earlier chapters, namely as directed acyclic graphs.
+Essentially, serial episodes are sequences, while parallel episodes are multisets. Figure \ref{fig_exampleEpisodes} visualizes example episodes in the same way that we have visualized episodes in earlier chapters, namely as directed acyclic graphs (DAG).
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{exampleEpisodes}
 	\caption{An example of different episodes: (a) - a serial episode, (b) - a parallel episode, (c) - an elementary (composite) episode}
-	\label{fig_streamMiningTaxonomy}
+	\label{fig_exampleEpisodes}
 \end{figure}
 
 %\begin{figure}[H]
@@ -72,7 +72,7 @@ Essentially, serial episodes are sequences, while parallel episodes are multiset
 %
 %\end{figure}
 
-In fact each episode can be formally transformed to a DAC using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAC $G = (V,E)$ by executing the following:
+In fact each episode can be formally transformed to a DAG using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAC $G = (V,E)$ by executing the following:
 
 \begin{enumerate}
 	\item For each $v \in V_\alpha$ add $v$ to $V$ and label $v$ with $g_\alpha (v)$
@@ -133,6 +133,16 @@ So far we have talked a lot about episode patterns but we have not yet talked ab
 \textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ we can define an occurrence of $\alpha$ as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V\alpha : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds \cite{mannila1995discovering}.
 \end{mydef}
 
+An example of an episode pattern, a sequence and two occurrences is visualized in figure \ref{fig_occurrenceExample}.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=\textwidth]{occurrenceExample}
+	\caption{A visualization of the concept of episode occurrences in an event sequence. The episode pattern is drawn in green, the sequence in yellow. An occurrence is defined as a mapping from the nodes of the pattern to events in the sequence (see definition \ref{def_episodeOccurrence}). Thus the occurrences are visualized as arrows of different colors (blue and purple). }
+	\label{fig_occurrenceExample}
+\end{figure}
+
+
 \subsection{Episode Discovery and general Mining Algorithm}
 \label{subsec_episodeDiscovery}
 When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. This is similar to all the different kinds of pattern mining algorithms, such as the apriori algorithm for finding frequent itemsets \cite{agrawal1994fast}. A general algorithm for mining the episodes occurring frequently in a sequence is given in algorithm \ref{alg_generalEpisodeMining}. The algorithm is very alike the basic apriori algorithms, since it uses a level-wise, breadth first search by first identifying all frequent episodes of a certain length $i$ and then uses these frequent episodes to generate candidates (possibly frequent episodes) of length $i+1$. In order for this to be correct, episode frequency must follow the apriori principle \cite{agrawal1994fast}, which formally means that if an episode is frequent, all its subepisodes must be frequent as well. Intuitively one would assume that this is always true for episodes but strictly speaking this depends on the definition of episode frequency. However, any frequency definition of episodes that does not satisfy the apriori principle would be highly questionable to say the least, since this would eliminate the possibility of an efficient candidate generation that prunes those episodes which have infrequent subepisodes. To the best of our knowledge all frequency definitions proposed in the literature satisfy the apriori principle.\newline
@@ -180,14 +190,23 @@ To the best of our knowledge the window based frequency was the first frequency 
 \textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
 \end{mydef}
 
-%TODO: nice picture visualizing the different windows 
+An example of how windows of a fixed size are located in a sequence of events is presented in figure \ref{fig_windowBasedFrequency}.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=\textwidth]{windowBasedFrequency}
+	\caption{Different time windows of size 5 in an event sequence.}
+	\label{fig_windowBasedFrequency}
+\end{figure}
+
 
 \begin{mydef}
 \textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window size of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with size $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$. %TODO: incorporate sequence bounds and number of windows
 \end{mydef}
 
-For example given a sequence $S = [ (12,A) , (14,B) , (19,C) , (22,A), (34,D) ]$ the Episode $\alpha = B \rightarrow A$ occurs in window $W(S,14,22)$. \newline 
-This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. If we have a window size of $w=11$ for the previously mentioned example, we can find the episode $B \rightarrow A$ in the consecutive windows $W(S,12,22)$, $W(S,13,23)$ and $W(S,14,24)$, which means we will get a frequency of $3$ just for the two events $(14,B)$ and $(22,A)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
+
+For example given the sequence visulaized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
+This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. In the previously mentioned example, we can find the episode $C \rightarrow D$ in the consecutive windows $W(S,1,5)$, $W(S,2,6)$ and $W(S,3,7)$, which means we will get a frequency of $3$ just for the two events $(3,C)$ and $(4,D)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
 When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes can be looked up in the appendix \ref{app_freqCounting}.
 There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
 
@@ -211,7 +230,7 @@ The first alternate definition does uses the concept of minimal occurrences:
 The second alternative definition introduces the concept of non-overlapping occurrences:
 
 \begin{mydef}
-\textbf{Non-Overlapping Occurrences} Given a m-Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ where $V_\alpha = \{v_1,...,v_m\}$, two occurrences $h_1$ and $h_2$ of $\alpha$ are non-overlapped if either 
+\textbf{Non-Overlapping Occurrences} Given a m-Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ where $V_\alpha = \{v_1,...,v_m\}$, two occurrences if all timestamps of one of the occurrences are bigger than all the timestamps of the other occurrence. Formally two occurrences $h_1$ and $h_2$ of $\alpha$ are non-overlapped if either:
 \begin{itemize}
 	\item $\forall \, v_j \in V_\alpha : h_2(v_1)>h_1(v_j)$ or 
 	\item $\forall \, v_j \in V_\alpha : h_1(v_1)>h_2(v_j)$
@@ -225,7 +244,7 @@ An example scenario visualizing overlapping and non-overlapping occurrences is v
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{nonOverlappingExample}
-	\caption{JOho test}
+	\caption{An example sequence that shows how occurrences of episode patterns can overlap. Two non-overlapping occurrencesare colored in green, whereas the orange occurrences would overlap with one of the green occurrences.}
 	\label{fig_nonOverlappingExample}
 \end{figure}
 
