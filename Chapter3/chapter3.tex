@@ -72,7 +72,7 @@ Essentially, serial episodes are sequences, while parallel episodes are multiset
 %
 %\end{figure}
 
-In fact each episode can be formally transformed to a DAG using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAC $G = (V,E)$ by executing the following:
+In fact each episode can be formally transformed to a DAG using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAG $G = (V,E)$ by executing the following:
 
 \begin{enumerate}
 	\item For each $v \in V_\alpha$ add $v$ to $V$ and label $v$ with $g_\alpha (v)$
@@ -104,7 +104,7 @@ Interestingly, there are other parts of the related work that use the term \text
 	\label{fig_notSequenceOfSet}
 \end{figure}
 
-If we want to quickly denote simple episodes formally without drawing a DAC, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures \newline  
+If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures \newline  
 The notion of sub- and superpatterns, which is very important for most pattern mining applications also applies to episodes, as shown in the next definition.
 
 \begin{mydef}
@@ -209,7 +209,7 @@ An example of how windows of a fixed size are located in a sequence of events is
 \end{mydef}
 
 
-For example given the sequence visulaized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
+For example given the sequence visualized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
 This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. In the previously mentioned example, we can find the episode $C \rightarrow D$ in the consecutive windows $W(S,1,5)$, $W(S,2,6)$ and $W(S,3,7)$, which means we will get a frequency of $3$ just for the two events $(3,C)$ and $(4,D)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
 When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes can be looked up in the appendix \ref{app_freqCounting}.
 There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
@@ -248,7 +248,7 @@ An example scenario visualizing overlapping and non-overlapping occurrences is v
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{nonOverlappingExample}
-	\caption{An example sequence that shows how occurrences of episode patterns can overlap. Two non-overlapping occurrencesare colored in green, whereas the orange occurrences would overlap with one of the green occurrences.}
+	\caption{An example sequence that shows how occurrences of episode patterns can overlap. Two non-overlapping occurrences are colored in green, whereas the orange occurrences would overlap with one of the green occurrences.}
 	\label{fig_nonOverlappingExample}
 \end{figure}
 
@@ -291,3 +291,6 @@ The same procedure can be applied to serial episodes, except that
 
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
 Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes (TODO: refer to later chapter, since I will do that). For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. %TODO: expand this subsection if needed
+
+\section{Problem Definition}
+TODO: formulate the problem and mention the solution approaches
