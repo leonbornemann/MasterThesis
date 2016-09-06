@@ -140,7 +140,7 @@ As visualized in figure \ref{fig_streamMiningTaxonomy} this thesis mainly deals 
 \subsection{Pattern Mining in Data Streams}
 \label{subsec_PatternMining}
 
-TODO: sequential patterns here -> look for similarities to episode mining and so on.
+TODO: is it actually necessary to look at this - the really relevant stuff is done in the episode mining section
 
 \subsection{Time Series Analysis in Data Streams}
 \label{subsec_timeSeriesAnalysis}
@@ -155,12 +155,12 @@ Before diving deeper into the topic of time series analysis, it is important to 
 Data streams are also ordered sequences of data. The important distinctions between time series and data streams are: 
 
 \begin{itemize}
-	\item Data streams continously have new data points coming in, thus are continously growing. This does not have to be the case for time series data. A database that records electrocardigraphy readings of different patients still contains time series data, however these are not data streams, since the readings are finished and no longer updating.
+	\item Data streams continuously have new data points coming in, thus are continuously growing. This does not have to be the case for time series data. A database that records electrocardiography readings of different patients still contains time series data, however these are not data streams, since the readings are finished and no longer updating.
 	\item Data Streams do not have to be sampled at the same time interval, in fact varying time delay between data points is very common here.
 	\item In contrast to time series it is common in data streams to have streams of categorical values or events, whereas values of time series are usually numeric.
 \end{itemize}
 
-The combination of both, a time series data stream, is a time series that is constantly updating, for example an electrocardiography reading that is curently taking place, or stock values that are being recorded over a day. In these cases the time series must be processed online. \newline
+The combination of both, a time series data stream, is a time series that is constantly updating, for example an electrocardiography reading that is currently taking place, or stock values that are being recorded over a day. In these cases the time series must be processed online. \newline
 At the first glance this thesis does not seem to be located in the area of time series analysis, since it deals with the mining of complex events. However, since this thesis aims to create a novel method in order to build predictive models using complex events. Predictive models however are commonly build for time series data, since predicting time series (also called forecasting) is of interest in many different domains. Since any novel method needs to be compared to the state of the art it is important to at least give a brief overview, which is what is done here.\\
 Most other research areas in data mining such as clustering or classification are rather focussed in their goals (find an appropriate clustering or build an acurate classifier). In contrast to this the research area of time series analysis is more broad, meaning there are a variety of different objectives that can be of interest when analyzing time series. Thus it is helpful to first get an overview over the most common objectives and techniques in a similar way as the taxonomy for data stream mining visualized in figure \ref{fig_streamMiningTaxonomy}. The main source for this subsection is the book by J. Gama \cite{gama2010knowledge}. Figure \ref{fig_timeSeriesInDataStreamsOverview} visualizes the different areas of interest in time series analysis in data streams mentioned by the author.
 
@@ -175,11 +175,11 @@ Note that the research area of time series analysis is large and therefore there
 
 \begin{itemize}
 	\item \textbf{Time Series Patterns and Properties:} A lot of time series can be categorized according to their behavior and can be said to have certain properties. Among these are for example long term trends, seasonality (cyclic behavior) and stationarity ( mean, variance and autocorrelation are constant).
-	\item \textbf{Time Series Similarity Measures:} Similarity of time series has many applications and can for example be used in k-NN classification. There are different similarity measures, which each have their advantages and disadvantages. Two well knowne examples are the classic euclidian distance and the dynamic time warping algorithm.
+	\item \textbf{Time Series Similarity Measures:} Similarity of time series has many applications and can for example be used in k-NN classification. There are different similarity measures, which each have their advantages and disadvantages. Two well known examples are the classic euclidean distance and the dynamic time warping algorithm.
 	\item \textbf{Symbolic Approximation:} Symbolic Approximation is a technique that aims to discretize time series into a string of arbitrary length. It can be of interest if one wants to apply algorithms that work on strings or categorical data to time series.
 \end{itemize}
 
-As already mentioned time series prediction (also called forecasting) is relevant for this thesis due to the emprirical evaluation which uses financial time series data. Thus, instead of giving a detailed overview over the general topic of time series prediction, we remain rather broad in this subsection and instead we devote the next subsection to exclusively report the state of the art on the prediction of financial time series. \\
+As already mentioned time series prediction (also called forecasting) is relevant for this thesis due to the empirical evaluation which uses financial time series data. Thus, instead of giving a detailed overview over the general topic of time series prediction, we remain rather broad in this subsection and instead we devote the next subsection to exclusively report the state of the art on the prediction of financial time series. \\
 Very broadly forecasting methods can be divided into linear and non-linear methods. Linear models are usually simpler, but are at a disadvantage when the underlying model is non-linear \cite{zhang2003time}. Non-linear methods, such as neural networks are more powerful, in fact it has been shown that neural networks can in theory model any non-linear function \cite{abraham2005artificial} \cite{funahashi1989approximate}. However, building and training an actual neural network is a difficult task, since multiple design choices (such as the number of hidden neurons, the activation function and the initial weights) need to be made, which usually requires expert knowledge of both the underlying domain as well as neural networks in general in order to train an appropriate network \cite{abraham2005artificial}. Researchers have also tried to combine both approaches in order to form hybrid methods \cite{zhang2003time}. \newline
 Neural networks were originally conceived as batch methods, meaning there were used in an offline scenario with no new data coming in constantly. However adapting them to the stream environment is surprisingly simple in most cases and has been done on multiple occasions \cite{chang2002real} \cite{frank2001time}. In fact, the streaming environment can be beneficial to neural network training, since training a neural network in a static environment usually means making multiple passes over the training data, due to the lack of training data. If done incorrectly this can result in overlearning the training data and thus poor generalization. In the streaming environment however, there is an abundance of data, which means that each example has to be processed only once \cite{gama2010knowledge}. \newline
 Predicting or forecasting time series values is normally very domain specific which results in different domains having their own specialized forecasting methods or specific modifications of popular general predictive models. Some of the domains in which time series forecasting is relevant are:
@@ -192,7 +192,7 @@ Predicting or forecasting time series values is normally very domain specific wh
 
 TODO: a few more sentences about forecasting in different domains and why...
 
-QUESTION: maybe explain neural ?
+QUESTION: maybe explain neural networks ?
 %As already mentioned many data mining algorithms for data streams make compromises of some sort or employ appoximations. Especially in the area of pattern mining there are quite a few approaches that use approximations or focus on the most recent data. Gianella et. al. have for example developed an algorithm to incrementally maintain approximately frequent itemsets for the most recent time windows using tilted time window frames \cite{giannella2003mining}. Approaches to mine frequent items without tilting the time windows exist as well, such as the sticky sampling or the lossy counting algorithm \cite{manku2002approximate}. These algorithms can be generalized to mine frequent itemsets, too. If this is done however pruning the candidates may become an issue if the main memory is small (the number of candidates to maintain may be too large). \newline
 %A paper also related to regression and time series forecasting was published by Papadimitriou et. al. \cite{papadimitriou2003adaptive}. The authors tackle the problem of cyclic time series mining, as well as time series prediction of numerical values in potentially infinite data streams. \newline
 %The rise in popularity of mining data streams also pushes research areas like distributed data mining, in which parallelized versions of data mining algorithms are researched. Large data streams and distributed systems often go hand in hand, which creates the need for distributed algorithms. Such solutions have been researched for example for frequent pattern mining \cite{lin2015fast}, association rule mining \cite{ashrafi2004odam}, clustering \cite{januzaj2004dbdc} and classification (in this case a distributed boosting algorithm) \cite{lazarevic2001distributed}. \newline
@@ -234,10 +234,6 @@ QUESTION: maybe explain neural ?
 %Episodes have roughly been categorized as serial, parrallel or composite and there are different mining methods proposed for each of these \cite{mannila1995discovering} \cite{zhou2010mining}. The connection between episodes and hidden markov models was also explored in a PHD thesis by Laxman \cite{laxman2006discovering}.
 %Evaluating episode mining algorithms on real-life datasets is often difficult due to a lack of knowledge about the ground truth. Thus, generation of realistic, synthetic datasets has been looked into as well \cite{zimmermann2012generating}.
 
-\subsection{Semantic Web}
-\label{subsec_semanticWeb}
-TODO
-
 
 
 \section{Stock Market Forecasting}
@@ -262,7 +258,7 @@ Most of the visualized information in figure \ref{fig_financialTimeSeriesPredict
 	\item \textbf{Prediction Methods:} While figure \ref{fig_financialTimeSeriesPredictionOverview} mentions many different approaches to the forecasting of stock markets, a large majority of the published papers in this area uses some form of neural network. In fact Atsalakis et. al. note that 60\% of the papers they surveyed use feed forward Neural Networks and recurrent networks \cite{atsalakis2009surveying}. 
 \end{itemize}
 
-TODO: more? Come to a conclusion
+TODO: formulate a nice conclusion
 
 
 %Similar to regression and classification, but not quite the same is prediction. Prediction (sometimes also called forecasting) introduces a new dimension, which is time. The task in prediction is to build a model that if given data points on a timeline will predict which data point will show up next.
@@ -315,7 +311,9 @@ The applications for episode mining are diverse and some of them are mentioned i
 	\item Episode mining has been used to extract rules from sequences in several different domains, such as geophysics (finding dependencies between earthquakes) \cite{meger2004constraint} or health care (analysis of temoral dependencies between risk factors for atherosclerosis) \cite{meger2004mining}.
 \end{itemize}
 
-
+\section{Semantic Web}
+\label{subsec_semanticWeb}
+TODO
 
 
 %\section*{Subplots}

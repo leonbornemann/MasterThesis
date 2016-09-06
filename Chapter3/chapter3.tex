@@ -72,7 +72,7 @@ Essentially, serial episodes are sequences, while parallel episodes are multiset
 %
 %\end{figure}
 
-In fact each episode can be formally transformed to a DAG using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAC $G = (V,E)$ by executing the following:
+In fact each episode can be formally transformed to a DAG using the following simple procedure: Given an Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$, create the corresponding DAG $G = (V,E)$ by executing the following:
 
 \begin{enumerate}
 	\item For each $v \in V_\alpha$ add $v$ to $V$ and label $v$ with $g_\alpha (v)$
@@ -104,7 +104,7 @@ Interestingly, there are other parts of the related work that use the term \text
 	\label{fig_notSequenceOfSet}
 \end{figure}
 
-If we want to quickly denote simple episodes formally without drawing a DAC, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures \newline  
+If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures \newline  
 The notion of sub- and superpatterns, which is very important for most pattern mining applications also applies to episodes, as shown in the next definition.
 
 \begin{mydef}
@@ -209,7 +209,7 @@ An example of how windows of a fixed size are located in a sequence of events is
 \end{mydef}
 
 
-For example given the sequence visulaized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
+For example given the sequence visualized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
 This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. In the previously mentioned example, we can find the episode $C \rightarrow D$ in the consecutive windows $W(S,1,5)$, $W(S,2,6)$ and $W(S,3,7)$, which means we will get a frequency of $3$ just for the two events $(3,C)$ and $(4,D)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
 When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes can be looked up in the appendix \ref{app_freqCounting}.
 There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
@@ -248,7 +248,7 @@ An example scenario visualizing overlapping and non-overlapping occurrences is v
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{nonOverlappingExample}
-	\caption{An example sequence that shows how occurrences of episode patterns can overlap. Two non-overlapping occurrencesare colored in green, whereas the orange occurrences would overlap with one of the green occurrences.}
+	\caption{An example sequence that shows how occurrences of episode patterns can overlap. Two non-overlapping occurrences are colored in green, whereas the orange occurrences would overlap with one of the green occurrences.}
 	\label{fig_nonOverlappingExample}
 \end{figure}
 
@@ -291,3 +291,48 @@ The same procedure can be applied to serial episodes, except that
 
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
 Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes (TODO: refer to later chapter, since I will do that). For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. %TODO: expand this subsection if needed
+
+\section{Problem Definition}
+As already mentioned before the problem to be tackled in this thesis is the prediction of future events in data streams using episodes. The approaches shall have the following properties:
+
+\begin{itemize}
+	\item \textbf{Local and fast prediction:} We do not focus on long term trends or on predictions of special values at fixed times (for example daily closing values of stocks), but instead aim to give predictions about the near future given the current state of the stream.
+	\item \textbf{Usage of an Annotated Event Stream} Most forecasting methods (as reviewed in TODO) focus on regression, meaning the predictions of numerical values. In contrast to this we work on annotated event streams, meaning we deal with a stream of events, which have predefined types (which is necessary to discover episodes) and we aim to predict the occurrences of events of certain types.
+\end{itemize}
+
+Since a lot of basic streams are numeric in nature we define:
+
+\begin{mydef}
+\textbf{Low Level Event Stream} A Low Level Event stream is defined as a (possibly infinite or constantly updating) sequence: $LLES = [v_1,v_2,...]$ where each $v_i$ has the form of a tuple: $t_i = (t_i,v_{i1},v_{i2},...,v_{in})$ where $t_i \in \mathbb{N}$ is the timestamp of tuple $i$ and $v_{ij}$ is the j-th value of the i-th tuple. The datatypes of the values in the tuple depend on the concrete domain or stream, so they are not further specified. Common types are numerical, categorical or string values. The Low Level Event Stream is ordered by the timestamp values, but events are allowed to occur at the same time. Formally this means: $T_i \leq T_j \implies i \leq j$. 
+\end{mydef}
+
+We refer to the streams that we perform the suggested mining approaches on as Annotated Event Streams:
+
+\begin{mydef}
+\textbf{Annotated Event Stream} An Annotated Event Stream is defined as a (possibly infinite or constantly updating) sequence: $AES = [ (T_1,t_1),(T_2,t_2),... ] $ where $T_i \in \Sigma$ is the event type of the i-th event and $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$.
+\end{mydef}
+
+Note that this definition is essentially the same as definiton \ref{def_eventSequence}, which defines event sequences. The only difference is that in an Annotated Event Stream we allow for new events to constantly come in, which makes the sequence possibly infinite.
+If the original underlying data source is a low level event stream it needs to be transformed to an annotated event stream, which can be done via a transformation procedure:
+
+\begin{mydef}
+\textbf{Tranformation Procedure} A transformation procedure is a mapping $f$ that takes a low level event stream $LLES$ as an input and outputs an annotated event stream $AES$ as well as the corresponding event aphabet $\Sigma$.
+\end{mydef}
+
+Note that the selection or development of the transformation procedure is extremely important for the success of the subsequent mining of the annotated event stream. If the annotated events that are generated are largely meaningless due to a suboptimal transformation it is unlikely that the mining process will discover episodes that are helpful to predict occurrences of the desired events. 
+TODO: Aggregation, discretization
+If the low level annotated stream is processed in an online scenario, it is necessary to also do the transformation in an online way, which imposes additional restrictions on the transformation process (TODO: exmplain those).
+
+Given an annotated event stream $AES$ it is the goal of this thesis to develop algorithms that will build predictive models:
+
+\begin{mydef}
+\label{def_predictiveModel}
+\textbf{Predictive Model} A predictive model for $M(T)$, $T \in Sigma$ is a model that if given the current state of an annotated event stream will output a binary value in the following:
+\begin{itemize}
+	\item $1$ if the model expects an event of type $T$ to occur in the stream in the near future
+	\item 0 otherwise.
+\end{itemize} 
+\end{mydef}
+
+Definition \ref{def_predictiveModel} purposefully remains rather general and thus vague, since a predictive model can naturally function in many ways. Thus some of the key points, such as what is the state of a stream and what exactly does the term "near future" mean mathematically remain unspecified here and instead will be specified by the concrete algorithms. 
+Nevertheless one should note that in most streaming scenarios we cannot store the whole stream, meaning it is impractical for a model to demand that the current state of the stream is defined by its entire history. Likewise a model may define that the "near future" means an extremely long time, thus most likely making the model correct if it simply outputs $1$ every time, however such a model is obviously not very useful.
