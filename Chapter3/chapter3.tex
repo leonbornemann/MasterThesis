@@ -137,6 +137,13 @@ Given the notion of an event sequence we can now define episode occurrences:
 \textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ we can define an occurrence of $\alpha$ as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V\alpha : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds. \cite{mannila1995discovering}
 \end{mydef}
 
+A classic episode pattern as defined in (TODO) in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence:
+
+\begin{mydef}
+\label{def_episodeOccurrence}
+\textbf{Episode Occurrence Duration} The duration of an occurrence is defined as the difference between the timestamps of the last and first event that the episode nodes are mapped to. TODO: formalize and sources
+\end{mydef}
+
 An example of an episode pattern, a sequence and two occurrences is visualized in figure \ref{fig_occurrenceExample}.
 
 \begin{figure}[h]
@@ -191,6 +198,7 @@ This leads to various frequency definitions of episodes in the literature, which
 To the best of our knowledge the window based frequency was the first frequency definition for episodes to gain general popularity. It was conceived by Mannila et. al. \cite{mannila1995discovering}, although the frequency counting algorithms were only mentioned in text form. The same authors  specified the algorithms in a later paper \cite{mannila1997discovery}, which acts as the primary source for the overview given in this subsection. In order to define the window based frequency we first need the notion of a time window: 
 
 \begin{mydef}
+\label{def_timeWindow}
 \textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
 \end{mydef}
 
@@ -205,6 +213,7 @@ An example of how windows of a fixed size are located in a sequence of events is
 
 
 \begin{mydef}
+\label{def_windowBasedFrequency}
 \textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window size of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with size $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$. %TODO: incorporate sequence bounds and number of windows
 \end{mydef}
 
@@ -228,6 +237,7 @@ The first alternate definition does uses the concept of minimal occurrences:
 \end{mydef}
 
 \begin{mydef}
+\label{def_minimalOccuranceFrequency}
 \textbf{Episode Frequency - Minimal Occurrence based Definition} Given a sequence of events $S$ and an Episode $\alpha$, we define the minimal occurrence based frequency $mo\_freq(\alpha )$ as the number of minimal occurrences of $\alpha$ in $S$. TODO: find and cite the original source
 \end{mydef}
 
@@ -255,6 +265,7 @@ An example scenario visualizing overlapping and non-overlapping occurrences is v
 This leads to the Definition:
 
 \begin{mydef}
+\label{def_nonOverlappingFrequency}
 \textbf{Episode Frequency - Non-Overlapping Occurrences based Definition} Given a seqeunce of events $S$ and an Episode $\alpha$, we define the non-overlapping occurrence based frequency $noo\_freq(\alpha )$ as cardinality of the largest set of non-overlapped occurrences of $\alpha$ in $S$ \cite{laxman2007fast}.
 \end{mydef}
 
