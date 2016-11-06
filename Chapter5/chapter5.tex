@@ -7,3 +7,56 @@
 \else
     \graphicspath{{Chapter5/Figs/Vector/}{Chapter5/Figs/}}
 \fi
+
+This chapter explains the empirical evaluation of the methods suggested in chapter (TODO: Referecne). Section \ref{sec_applicationDomain} presents the application domain and the associated dataset. Section \ref{sec_transformation} then follows up with a description of small adjustments to the sugested algorithm as well as transformations applied to the dataset. Subsequently section \ref{sec_evaluationMetrics} explains the choice of evaluation metrics. Finally section \ref{sec_evaluationResults} presents the evaluation results and explains the observations made from the plots.
+
+\section{Application Domain and Dataset}
+\label{sec_applicationDomain}
+
+\subsection{Dataset}
+As mentioned in the introduction the application domain for the streaming prediction algorithms conceived in this thesis is financial data. Basic approaches and challenges in the forecasting of financial time series have already been covered in the related work chapter (TODO: reference). The specific dataset used in this thesis was created using the (unofficial) yahoo API for stock market data (TODO: referenes). The dataset has the following properties:
+\begin{itemize}
+	\item It contains data about all companies traded at the NASDQ (TODO: cite/explain), which is the main financial stock exchange of the USA
+	\item For the purpose of this paper these companies are filtered by whether they have an entry in the dbpedia (TODO: cite), which is a source for semantic knowledge. This reduces the number of companies of interest to 40.
+	\item The data itsself is the stock price for each company at a certain timestamp. The stream is sampled at a constant interval with 15 seconds between each event (TODO: phrase better)
+	\item The data was sampled from the TODO: begin date to  TODO: end date. However, some days in between are missing due to the data being corrupted.
+\end{itemize}
+
+\subsection{Data Quality}
+The yahoo API is a free to use data source and while overall commonly used as a source for opening and closing prices. There are not that many use cases in which the yahoo finance api is used to generate a stream and thus there might be errors or inaccuracies. In fact there is definitely one glitch in the stream concerning the company "TECH" TODO: true name as shown in figure TODO.
+
+Such an extreme glitch as shown in figure TODO does not occur in any other stream, however there are sometimes significant jumps from one value to another. The main problem here is that it is impossible to tell whether those jumps are due to errors, or delayed updates on the server side or whether they are caused by large buy or sell actions, for example by high-frequency traders. For this reason the evaluation will consider them in a special manner, once including them and once filtering them out (dismissing them as invalid data) in order to evaluate model performances for both cases. 
+
+\subsection{Restrictive Use of Data}
+The yahoo finance api offers data for private use only, which unfortunately means that the author of this thesis is not able to publish the dataset obtained by querying the yahoo finance api.
+
+\section{Dataset Transformation and Algorithm Adjustments}
+\label{sec_transformation}
+Since the algorithms introduced in chapter TODO: reference work on event data streams, meaning streams of categorical values (episodes are only defined for categorical event types). Since however the dataset described in section \ref{sec_applicationDomain} in its base form has numerical values, these numerical streams need to be transformed to categorical streams, in which the prediction of a specific event type is of interest. There are many different ways of transforming the numerical data streams, neither of which are necessarily right or wrong. The most simple transformation is a simple comparison of the current value of a stock to the previous value. This will result in three different event types per company: \textit{DOWN}, \textit{EQUAL} and \textit{UP}. This will result in a stream with a lot of events, which makes the episode mining task hard, since there is a lot of data to consider. The amount of data can be reduced by discarding events of type \textit{EQUAL}. \\
+Another possible way of transforming the data is by doing aggregation until a change of a certain amount can be found (for example at least 1\% of the original value). Aggregation in this form will produce much less annotated events. A disadvantage of this approach however is that the main evaluation metric which is to be used (rate of return, see TODO: reference) might be skewed if the stream is aggregated (TODO: example for that?).\\
+For these reasons the numerical streams were transformed without aggregation and without considering events of type \textit{EQUAL}.
+
+\section{Evaluation Metrics}
+\label{sec_evaluationMetrics}
+
+In order to evaluate the quality of predictive models and thus reach conclusions about the original algorithms, appropriate evaluation metrics need to be chosen. The domains of both machine learning as well as stock market prediction offer diverse metrics that can be used to determine the quality of models. The most important quality metrics and their usage in this context will be discussed in the following subsections.
+
+\subsection{Rate of Return and Investment Strategies}
+Arguably one of the clearest metrics to determine the usefulness of a model in financial time series prediction is the rate of return of an investment strategy that is using the model predictions as abasis for the decisions. If the rate of return is positive the investor does make profit which means that the model's predictions are useful Return of investment is defined in the following: TODO define
+\\
+\\
+The investment strategy that is using the model predictions is depicted in Algorithm TODO. It is a very basic strategy that entirely relies on the model output. While rate of return is sort of representing the ground truth about a model (if the rate of return is positive the model is good, otherwise it is bad), it has the disadvantage of revealing nothing else about the model and its predictions. It can tell us that the model is good, but not why, when or under which circumstances the model is good. For this purpose the most common metrics from the domain of classification are briefly introduced in the next subsection.
+
+\subsection{Accuracy, Precision and Recall}
+TODO: Define accuracy, precision and recall
+
+These metrics give more details about the model than simple rate of return, however they are example based, meaning we need concrete test examples. It is not inherently clear how the test examples in our application should be counted. There are two major variants:
+
+\begin{itemize}
+	\item Count every stream window as an example TODO
+	\item Count every target event target occurrence as an example
+\end{itemize}
+
+\section{Evaluation Result}
+\label{sec_evaluationResults}
+
