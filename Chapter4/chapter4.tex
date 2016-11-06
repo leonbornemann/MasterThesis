@@ -22,9 +22,7 @@ In order to fully explain the algorithm we first need to define what we mean by 
 \textbf{Predictive Episode Rule} An episode $\alpha$ is called a predictive episode rule for event $A \in \Sigma$ if $\alpha$ has the form $\beta \rightarrow A$ where $\beta$ is an episode. 
 \end{mydef}
 
-TODO: limit length/duration 
-
-In the context of a predictive episode rule $\alpha = \beta \rightarrow A$ we also refer to $\beta$ as the prefix and to $A$ as the suffix of $\alpha$. 
+In the context of a predictive episode rule $\alpha = \beta \rightarrow A$ we also refer to $\beta$ as the prefix and to $A$ as the suffix or target event of $\alpha$. 
 The basic idea of the prediction algorithm using predictive episode rules is rather simple. If given a set $P$ of predictive episode rules, we monitor the stream and whenever we detect the prefix of an episode in $P$ we predict an occurrence of $A$. The idea is similar to the mining of sequential rules or rule-based classification (TODO: cite).
 Of course there is an infinite amount of predictive episode rules for an event type, finding those predictive episode rules that are actually useful for predicting the occurrence of an event is the main task when building (training) the model. The use case here is very similar to the related work that deals with the constraint based mining of episode rules (TODO: cite), where episode rules are mined in order to discover dependencies between earthquakes. There are two main important differences that make the approach used by the authors (TODO: name them) impractical.
 
@@ -33,22 +31,49 @@ Of course there is an infinite amount of predictive episode rules for an event t
  \item We are dealing with data in a streaming environment, meaning we can neither analyze the whole data, nor make multiple passes over the entire stream.
 \end{itemize}
 
-In order to describe how the set $P$ is built we first need to define support and confidence for predictive episode rules.
+In order to describe how the set $P$ is built by the suggested learning algorithm,we first need to define frequency, support and confidence for predictive episode rules, which are similar to classic association rules(TODO: cite). Before this can be done however we need to determine which frequency definition we will use in this algorithm. 
+
+\subsection{Choice of Frequency Measure}
+
+Recall that there are three main frequency measures that were proposed in the literature:
+
+\begin{itemize}
+	\item The Window-based Frequency (see defintion \ref{def_windowBasedFrequency})
+	\item The frequency based on minimal occurrences (see definition \ref{def_minimalOccuranceFrequency})
+	\item The frequency based on non-overlapping occurrences (see definition \ref{def_nonOverlappingFrequency})
+\end{itemize}
+
+Their properties were already discussed in subsection \ref{subsec_otherFrequency}. While the frequency measure using the non-overlapping occurrences is the latest measure and offers the best theoretical runtime, when recognizing episodes in a sequence it has a few drawbacks that are detrimental to its use in the given scenario. The first one is that it does not limit the duration of the episode occurrences. However limiting the duration of episode rules, or in other words giving episode occurrences expiry times (TODO: cite) is necessary when predicting event occurrences in streams. Consider for example the simple predictive episode rule $\alpha = B \rightarrow A$ and the following example sequence: 
+
+\begin{equation}
+S = [ (B,1),(C,2),(A,3),(B,4),...,(A,2000) ] 
+\end{equation}
+
+The non-overlapping frequency definition recognizes both $(B,1) \rightarrow (A,3)$ and $(B,4) \rightarrow (A,2000)$ as equally valid occurrences of $\alpha$ in $S$. However it is to be expected that when looking for episode rules for predictive purposes in a stream the events should happen close to each other (time-wise). This means that in this case $(B,1) \rightarrow (A,3)$ is likely a correct occurrence and prediction, whereas the occurrence $(B,4) \rightarrow (A,2000)$ is simply owed to the fact that at some point of time event $A$ will occur again in the stream and $(B,4)$ happened to occur a long time before that, without there necessarily being a causality.
+Additionally the non-overlapping frequency assumes that there is one long sequence, from which the episodes are to be mined. The window-based frequency however works on a set of individual windows of a sequence or stream. In the previous work this had not been an advantage or disadvantage, since it did not focus on the streaming scenario, which meant that it was possible to analyze the entire sequence. This lead to the use of sliding windows over the sequence when using the window-based frequency. In the streaming scenario it is impossible to use all of the data, instead a certain selection is necessary. This can be done easily when using the window-based frequency by simply storing the windows that are of interest. Selecting data for the non-overlapping frequency definition is more difficult. Thus we will use the window-based frequency in this approach
+
+\subsection{Basic Definitions}
+Since we decided on a frequency measure it is now possible to define frequency, support and confidence of predictive episode rules.
+
+\begin{mydef}
+\label{def_frequency}
+\textbf{Frequency} If given a set of time windows $WIN$ (see definition \ref{def_timeWindow}) of a sequence the frequency of a predictive episode $\alpha$ is defined as the number of windows in which $\alpha$ occurs: $freq(\alpha) = |\{W\,|W \in WIN\; \land \alpha\; occurs \; in \; W\}|$
+\end{mydef}
 
 \begin{mydef}
 \label{def_support}
-\textbf{Support} The support of a predictive episode $\alpha = \beta \rightarrow A$ is defined as $freq(\alpha)$, where $freq$ is a frequency measure for episodes, as discussed in sections \ref{subsec_windowBased} and \ref{subsec_otherFrequency}. TODO: not really frequency but support
+\textbf{Support} If given a set of time windows $WIN$ of a sequence the support of a predictive episode $\alpha$ is defined as $s(\alpha) = \frac{freq(\alpha)}{|WIN|}$ TODO: source
 \end{mydef}
 
 \begin{mydef}
 \label{def_confidence}
-\textbf{Confidence} The confidence of a predictive episode $\alpha = \beta \rightarrow A$ is defined as $\frac{freq(\alpha)}{freq(\beta)}$, where $freq$ is a frequency measure for episodes.
+\textbf{Confidence} The confidence of a predictive episode $\alpha = \beta \rightarrow A$ is defined as $c(\alpha) = \frac{freq(\alpha)}{freq(\beta)}$ TODO: source
 \end{mydef}
 
 The intention is clear and similar to the mining of classic association rules (TODO: cite): If a rule has a high confidence, it means that the prefix of the rule rarely occurs without its suffix $A$, meaning there is a high chance that this is a true predictor for the event $A$. Thus the goal of PERMS is to find a set of predictive episode rules $P$ that have a very high confidence and are above a certain support limit.
 
-\subsection{Choice of training data and frequency measure}
-Recall that in streaming applications it is impossible for to analyze the whole stream as one sequence using multiple passes. Thus, when presented with a stream any prediction or forecasting algorithm first needs to take some time to study the stream and extract training data to build the model. So if given an annotated event stream, how do we determine the training data? As it was described in section \ref{sec_episodeMiningBackground} the data basis for episode mining is one very long sequence. Thus the first simple approach would be to simply record the stream as a sequence until we have reached a number of desired elements or run out of memory. The recorded sequence would then be the training sequence from which the predictive episode rules can be mined. This approach is visualized in figure \ref{trainingDataNaive}.
+\subsection{Choice of training data}
+Recall that in streaming applications it is impossible for to analyze the whole stream as one sequence using multiple passes. Thus, when presented with a stream any prediction or forecasting algorithm first needs to take some time to study the stream and extract training data to build the model. So if given an annotated event stream, how do we determine the training data? As it was described in section \ref{sec_episodeMiningBackground} the data basis for episode mining is one very long sequence. Thus the first simple approach would be to simply record the stream as a sequence until we have reached a number of desired elements or run out of memory. The recorded sequence would then be the training sequence from which the predictive episode rules can be mined. This approach is visualized in figure \ref{fig_trainingDataNaive}.
 
 \begin{figure}[h]
 	\centering
@@ -58,16 +83,16 @@ Recall that in streaming applications it is impossible for to analyze the whole 
 \end{figure}
 
 The disadvantage of this naive approach is that there is no guarantee about the number of occurrences of the event we aim to predict. Say we want to predict $A$ and $A$ is rather sparse in the beginning of the stream, then we will have a very small data basis to extract predictive episode rules for $A$ and thus will likely not succeed. 
-A better approach is to scan the stream for occurrences of the event $A$ and whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows. This approach is visualized in figure TODO. This approach guarantees that we have a sufficient data basis to mine predictive episodes, however it does limit us to frequency measures that are based on windows. 
+A better approach is to scan the stream for occurrences of the event $A$ and whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows. This approach is visualized in figure \ref{fig_trainingDataWindowsOfA}. This approach guarantees that we have a sufficient number of windows that are immediately followed by the target event. The mining process then is to simply find frequent episodes in the mined windows. Each of these then automatically corresponds to the prefix of a potential predictive episode rule with the suffix being the target event ($A$ in the figures).
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{trainingDataWindowsOfA}
 	\caption{Visualization of using fixed windows that precede the target event as training examples. Predictive episodes can be mined from the windows that are extracted from the stream as shown above.}
-	\label{fig_trainingDataNaive}
+	\label{fig_trainingDataWindowsOfA}
 \end{figure}
 
-The obvious and very big disadvantage is that there are no negative examples in the training sample taken from the stream. Each window ends with the target event $A$, thus every episode mined from the windows can have $A$ appended as a suffix and thus every predictive episode rule will have a confidence of $1.0$. This means that selection via confidence is meaningless, since we have seen no negative examples, meaning windows that are not followed by $A$. However negative examples can be extracted from the stream in a similar manner. This is the basic idea behind the training data selection in PERMS. It is visualized in figure \ref{fig_trainingDataPositiveAndNegativeWindows}. 
+The obvious and very big disadvantage is that there are no negative examples in the training sample taken from the stream. Each window is immediately followed by the target event $A$, thus every episode mined from the windows can have $A$ appended as a suffix and thus every predictive episode rule will have a confidence of $1.0$. This means that selection via confidence is meaningless, since we have seen no negative examples, meaning windows that are not followed by $A$. However negative examples can be extracted from the stream in a similar manner. This is the basic idea behind the training data selection in PERMS. It is visualized in figure \ref{fig_trainingDataPositiveAndNegativeWindows}. 
 
 \begin{figure}[h]
 	\centering
@@ -98,9 +123,10 @@ The PERMS algorithm uses the following user-defined parameters:
 
 
 The basic idea of the PERMS algorithm is the following:
-We start at the beginning of the stream and keep a sliding window of a user defined size $d$ in memory. Whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows ($m$). Additionally we also store $m$ windows that do not contain $A$ and were also not followed by $A$ in the near future. Once we have enough windows, we can start to mine serial and parallel episodes from the windows preceding $A$ that have support $s$ or higher. Afterwards we rank the discovered rules by confidence, keep the $|P|$ episodes with the highest confidence and return them as the set of predictive episodes $P$.
+We start at the beginning of the stream and keep a sliding window of a user defined size $d$ in memory. Whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows ($m$). Additionally we also store $m$ windows that do not contain $A$ and were also not followed by $A$ in the near future. Once we have enough windows, we can start to mine serial and parallel episodes from the windows preceding $A$ that have support $s$ or higher. For that purpose we employ the apriori-like algorithms mentioned in TODO. Afterwards we rank the discovered rules by confidence, keep the $|P|$ episodes with the highest confidence and return them as the set of predictive episodes $P$.
 The subsequent application of the predictive model to the stream is very simple: If an episode $\alpha \in P$ occurs in the current sliding window output $1$ and otherwise output $0$ for the current sliding window.
-TODO: pseudocode plus images
+TODO: pseudocode
+
 
 \section{Feature Based Stream Window Classification}
 \label{sec_FeatureBasedStreamWindowClassification}
