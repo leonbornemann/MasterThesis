@@ -104,7 +104,15 @@ Interestingly, there are other parts of the related work that use the term \text
 	\label{fig_notSequenceOfSet}
 \end{figure}
 
-If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures \newline  
+If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures. \newline 
+In algorithms we use the following notation to access episodes:
+
+\begin{itemize}
+	\item for all episodes $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ we define $|\alpha | = |V_\alpha|$ as the size of the episode.
+	\item for serial episodes we define $\alpha [i]$ as the event type of the i-th node of $\alpha$ with respect to the total ordering imposed on $\alpha$ by ${\leq}_{\alpha}$. In other words $\alpha [i]$ is the i-th element of the sequence of event types, defined by the serial episode $\alpha$.
+	\item for parallel episodes $\alpha$ we say that $E \in \alpha$ if there is at least one $v \in V_\alpha$, so that $g_\alpha(v) = E$. In this context we define $count(\alpha,E)= \{v \in V_\alpha \mid g_alpha(v) = E\}$, meaning $count(\alpha,E)$ is the number of nodes in the parallel episode $\alpha$ that have type $E$.
+\end{itemize}
+
 The notion of sub- and superpatterns, which is very important for most pattern mining applications also applies to episodes, as shown in the next definition.
 
 \begin{mydef}

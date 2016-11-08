@@ -111,6 +111,7 @@ TODO: define negative and positive windows!
 
 
 \subsection{PERMS Parameters and Pseudocode}
+\label{subsec_perms}
 
 The PERMS algorithm uses the following user-defined parameters:
 
@@ -118,15 +119,204 @@ The PERMS algorithm uses the following user-defined parameters:
 	\item \textbf{$d$} - the (temporal) size of the sliding window. This also implies that all windows which the predictive episode rules will be mined from will exactly have duration $d$. TODO: talk about episode duration?	
 	\item \textbf{$m$} - the number of windows to mine the predictive episode rules from. Basically the sample size we take from the stream.
 	\item \textbf{$s$} - the minimum support that predictive episode rules must have to be considered for the model (rules with support $s$ or higher are frequent).
-	\item \textbf{$|P|$} - the desired size of the final set of predictive episodes.
+	\item \textbf{$n$} - the desired size of the final set of predictive episodes.
 \end{itemize}
 
+The pseudocode for PERMS is given in algorithm \ref{alg_PERMS}. 
 
-The basic idea of the PERMS algorithm is the following:
-We start at the beginning of the stream and keep a sliding window of a user defined size $d$ in memory. Whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows ($m$). Additionally we also store $m$ windows that do not contain $A$ and were also not followed by $A$ in the near future. Once we have enough windows, we can start to mine serial and parallel episodes from the windows preceding $A$ that have support $s$ or higher. For that purpose we employ the apriori-like algorithms mentioned in TODO. Afterwards we rank the discovered rules by confidence, keep the $|P|$ episodes with the highest confidence and return them as the set of predictive episodes $P$.
-The subsequent application of the predictive model to the stream is very simple: If an episode $\alpha \in P$ occurs in the current sliding window output $1$ and otherwise output $0$ for the current sliding window.
-TODO: pseudocode
 
+\begin{algorithm}[H]
+  \caption{PERMS
+    \label{alg_PERMS}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $S=[(T_s,t_1),...]$ be a stream of events and let $d$,$m$,$s$,$n$ be the parameters as defined in the beginning of subsection \ref{subsec_perms}.
+    \Function{PERMS}{}
+      \Let{$(PE,NE)$}{$WindowMining(S,d,m,A)$} 
+      \Let{$P$}{$BuildPredictiveEpisodeModel(PE,NE,s,n)$}
+      \State apply Set of predictive Episodes $P$ to the rest of the Stream $S$
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+As seen in the algorithm above the basic idea of the PERMS algorithm can be divided into 2 parts:
+
+\begin{itemize}
+	\item Training Example Mining (Window Mining)
+	\item Predictive Episode Model Building
+\end{itemize}
+
+\textbf{Training Example Mining}\\
+We start at the beginning of the stream and keep a sliding window of a user defined size $d$ in memory (see definition \ref{def_timeWindow}. Whenever an event of type $A$ enters the window we store the current window in a list until we have a sufficient number of windows ($m$). Additionally we also store $m$ windows that do not contain $A$ and were also not followed by $A$ in the near future. The pseudocode for this is given in algorithm \ref{alg_traningExampleMining}. TODO: negative examples genauer erklaeren.
+
+\begin{algorithm}[H]
+  \caption{Training Example Mining
+    \label{alg_traningExampleMining}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $S=[(T_s,t_1),...]$ be a stream of events, $d$ be the window size, $m$ the required number of windows and $A$ the event type to predict.
+    \Function{WindowMining}{}
+      \Let{$PE$}{$\emptyset$} 
+      \Let{$NE$}{$\emptyset$}
+      \Let{$i$}{$1$}
+      \Let{$t_{last}$}{$t_1$}
+      \While{$|PE| \neq m \; \lor |NE| \neq m $}
+      	\Let{$(T_i,t_i)$}{$S[i]$}
+      	\If{$T_i = A$}
+      		\Let{$t_{last}$}{$t_i$}
+      		\If{$|PE| \neq m$}
+          		\Let{$PE$}{$PE \cup W(S,i-d-1,i-1)$} \Comment{Add backwards window of size $d$ to training examples, including every event before timestamp $i$}
+          	\EndIf
+		\ElsIf{$|NE| \neq m \; \land t_i - t_{last} \geq d\cdot 2$}
+			\Let{$NE$}{$NE \cup W(S,i-d \cdot 2,i-d)$}
+			\Let{$t_last$}{$t_i$}
+       	\EndIf
+       	\Let{$i$}{$i+1$}
+      \EndWhile
+      \State \Return{$(PE,NE)$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\textbf{Predictive Episode Model Building}\\
+
+Once we have enough training examples, we can start to mine serial and parallel episodes from the windows preceding $A$ that have support $s$ or higher. For that purpose we employ the general mining algorithm for frequent episodes, (see algorithm \ref{alg_generalEpisodeMining} in subsection \ref{subsec_episodeDiscovery} ). The existing algorithms for counting episode frequency are made for the use case of one long sequence being mined for frequent patterns instead of single windows. Thus they are rather complex, since they avoid recounting the frequency of a candidate episode for each window and instead update counts when sliding the window forward (TODO: cite). Since the windows in our use case are not necessarily back to back, we can simplify the episode detection algorithms. The simplified detection algorithms for serial and parallel episodes are shown in algorithms TODO and TODO. Afterwards we rank the discovered rules by confidence, keep the $|P|$ episodes with the highest confidence and return them as the set of predictive episodes $P$. The pseudocode for this is given in algorithm \ref{alg_BuildPredictiveEpisodeModel}.
+
+\begin{algorithm}[H]
+  \caption{Predictive Episode Model Building
+    \label{alg_BuildPredictiveEpisodeModel}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $PE$ be the positive examples (Windows preceding $A$), let $NE$ be the negative examples (Windows not followed by $A$. Furthermore let $s$ be the minimum support and $n$ the number of predictive episodes to keep.
+    \Function{BuildPredictiveEpisodeModel}{}
+      \Let{$P$}{$MineFrequentParallelEpisodes(PE,s)$} 
+      \Let{$S$}{$MineFrequentSerialEpisodes(NE,S$}
+      \Let{$E$}{$P \cup S$}
+      \State Sort the $\alpha \in E$ by  $\alpha .c$
+      \State \Return{the top $n$ episodes $\alpha \in E$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+TODO: is the following necessary? I am not sure - review related work algorithms again!
+
+The detection of serial episodes in a single window can be implemented in the following:
+
+\begin{algorithm}[H]
+  \caption{Serial Episode Detection
+    \label{alg_SerialEpisodeDetection}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $W=[(T_s,t_1),...,(T_e,t_n)]$ be a Window of the Stream and let $\alpha$ be a serial episode.
+    \Function{SerialEpisodeDetection}{}
+      \Let{$i$}{$1$}
+      \Let{$pos$}{$1$}
+      \Let{$t_{prev}$}{$-1$}
+      \While{$i \leq |W| \land pos \neq |\alpha |$}
+      	\Let{$(T_i,t_i)$}{$W[i]$}
+      	\If{$T_i = \alpha [pos] \; \land t_i \neq t_{prev}$}
+      		\Let{$t_{prev}$}{$t_i$}
+      		\Let{$pos$}{$pos+1$}
+        \EndIf
+       	\Let{$i$}{$i+1$}
+      \EndWhile
+      \State \Return{$true$ if $pos =|\alpha |$, $false$ otherwise}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+The detection of parallel episodes in a single window can be implemented in the following:
+
+\begin{algorithm}[H]
+  \caption{Parallel Episode Detection
+    \label{alg_ParallelEpisodeDetection}}
+  \begin{algorithmic}[1]
+    \Statex
+    \Require Let $W=[(T_s,t_1),...,(T_e,t_n)]$ be a Window of the Stream and let $\alpha$ be a parallel episode.
+    \Function{ParallelEpisodeDetection}{}
+      	\Let{$i$}{$1$}
+      	\Let{$removed$}{$0$}
+      	\Let{$Remaining$}{new empty Map}
+		\For{each $A \in \alpha$}
+      		\Let{$Remaining[A]$}{$count(\alpha,A)$}
+      	\EndFor      
+      \While{$i \leq |W| \; \land removed \neq |\alpha |$}
+      	\Let{$(T_i,t_i)$}{$W[i]$}
+      	\If{$T_i \in \alpha \;\land Remaining[T_i] \neq 0$}
+      		\Let{$Remaining[T_i]$}{$Remaining[T_i] - 1$}
+      		\Let{$removed$}{$removed + 1$}
+        \EndIf
+       	\Let{$i$}{$i+1$}
+      \EndWhile
+      \State \Return{$true$ if $removed =|\alpha |$, $false$ otherwise}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+TODO: detecting all episodes in one iteration over the window
+
+
+After selecting the best $n$ predictive episodes the model can be applied to the rest of the stream.
+The application of the predictive model to the stream is very simple: If an episode $\alpha \in P$, with $P$ being the set of best predictive episodes, occurs in the current sliding window output $1$ and otherwise output $0$ for the current sliding window.
+
+%\begin{algorithm}[H]
+%  \caption{Calculate Window based Frequency for parallel Episodes
+%    \label{alg_windowBasedParallel}}
+%  \begin{algorithmic}[1]
+%    \Statex
+%    \Require Let $C$ be the set of candidate parallel episodes, and let $S=[(T_1,t_s),...,(T_n,t_e)]$ be a sequence of events, let $win$ be the window size and finally let $minS$ be the minimum support.
+%      \State \textit{// Initialization}
+%      \For{each $\alpha \in C$}
+%      	\For{each $A \in \alpha$}
+%      		\Let{$A.count$}{$0$}
+%      		\For{$i \in \{1,...,|\alpha |\}$}
+%      			\Let{$contains(A,i)$}{$\emptyset$}
+%      		\EndFor
+%      	\EndFor
+%      \EndFor
+%      \For{each $\alpha \in C$}
+%      	\For{each $A \in \alpha$}
+%      		\Let{$a$}{number of events of type $A$ in $\alpha$}
+%      		\Let{$contains(A,a)$}{$contains(A,a) \cup \{\alpha \}$}
+%      	\EndFor
+%      	\Let{$\alpha .eventCount$}{$0$}
+%      	\Let{$\alpha .freq$}{$0$}
+%      \EndFor
+%      \State \textit{// Recognition}
+%      \For{$start \gets t_s - win +1 \textrm{ to } t_e$}
+%      	\State \textit{//Bring new events to the window}
+%      	\For{each $(t,A) \in S $ where $t = start+win-1$}
+%      		\Let{$A.count$}{$A.count +1$}
+%      		\For{each $\alpha \in contains(A,A.count)$}
+%      			\Let{$\alpha .eventCount$}{$\alpha .eventCount + A.count$}
+%      			\If{$\alpha .eventCount = |\alpha | $}
+%          			\Let{$\alpha .inwindow$}{$start$}
+%       			\EndIf
+%      		\EndFor
+% 		\EndFor
+% 		\State \textit{// Drop old events out of the window}
+% 		\For{each $(t,A) \in S $ where $t = start-1$}
+% 			\For{each $\alpha \in contains(A,A.count)$}
+% 				\If{$\alpha .eventCount = |\alpha | $}
+%          			\Let{$\alpha .freq$}{$\alpha .freq + \alpha .inwindow -start $}
+%       			\EndIf
+%       			\Let{$\alpha .eventCount$}{$\alpha .eventCount - A.count$}
+% 			\EndFor
+% 			\Let{$A.count$}{$A.count -1$}
+% 		\EndFor
+%      \EndFor
+%      %\Let{$freq$}{$\emptyset$}
+%      %\Let{$i$}{$1$}
+%      %\While{$C_i \neq \emptyset$}
+%      	%\State Count frequencies of each Episode $E \in C_i$
+%       % \Let{$L_i$}{ $\{ E \mid E \in C_i \land C_i \; is\; frequent\}$}
+%       % \Let{$freq$}{$freq \cup L_i$}
+%       % \Let{$C_{i+1}$}{Generate Episode Candidates of length $i+1$ from $L_i$}
+%        %\Let{$i$}{$i+1$}
+%      %\EndWhile
+%      \State \Return{$\{\alpha \mid \alpha \in C \land \frac{\alpha.freq}{t_e - t_s + win -1} \geq minS\}$}
+%  \end{algorithmic}
+%\end{algorithm}
 
 \section{Feature Based Stream Window Classification}
 \label{sec_FeatureBasedStreamWindowClassification}
