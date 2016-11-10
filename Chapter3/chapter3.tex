@@ -89,7 +89,7 @@ The original paper by Manilla et.al. \cite{mannila1995discovering} also introduc
 This recursive definition of composite episodes may be confusing at first, since it is formulated very compactly. A slightly more clear way to look at it is the following:\\
 A composite episode is either:
 \begin{itemize}
-	\item A single event (An elementary episode of size 1).
+	\item A single event (An elementary episode of length 1).
 	\item A serial composition of two composite episodes
 	\item A parallel composition of two composite episodes
 \end{itemize}
@@ -108,7 +108,7 @@ If we want to quickly denote simple episodes formally without drawing a DAG, we 
 In algorithms we use the following notation to access episodes:
 
 \begin{itemize}
-	\item for all episodes $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ we define $|\alpha | = |V_\alpha|$ as the size of the episode.
+	\item for all episodes $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ we define $|\alpha | = |V_\alpha|$ as the length of the episode.
 	\item for serial episodes we define $\alpha [i]$ as the event type of the i-th node of $\alpha$ with respect to the total ordering imposed on $\alpha$ by ${\leq}_{\alpha}$. In other words $\alpha [i]$ is the i-th element of the sequence of event types, defined by the serial episode $\alpha$.
 	\item for parallel episodes $\alpha$ we say that $E \in \alpha$ if there is at least one $v \in V_\alpha$, so that $g_\alpha(v) = E$. In this context we define $count(\alpha,E)= \{v \in V_\alpha \mid g_alpha(v) = E\}$, meaning $count(\alpha,E)$ is the number of nodes in the parallel episode $\alpha$ that have type $E$.
 \end{itemize}
@@ -145,11 +145,11 @@ Given the notion of an event sequence we can now define episode occurrences:
 \textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ we can define an occurrence of $\alpha$ as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V\alpha : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds. \cite{mannila1995discovering}
 \end{mydef}
 
-A classic episode pattern as defined in (TODO) in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence:
+A classic episode pattern as defined in (TODO) in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence. Durations of episode occurrences become relevant in practical applications, when we want to forbid episode occurrences that range over a time period that is too large. 
 
 \begin{mydef}
 \label{def_episodeOccurrence}
-\textbf{Episode Occurrence Duration} The duration of an occurrence is defined as the difference between the timestamps of the last and first event that the episode nodes are mapped to. TODO: formalize and sources
+\textbf{Episode Occurrence Duration} The duration of an occurrence is defined as the difference between the timestamps of the last and first event that the episode nodes are mapped to. More formally if given an episode $\alpha$, a sequence $S=[(T_1,t_1),...,(T_n,t_n)]$ and an occurrence $h:V_\alpha \rightarrow \{1,...,n\}$ the episode duration is defined as $t_{last} - t_{first}+1$, where $last = max( \{h(v)| v \in V_\alpha \}$ and $first = min( \{h(v)| v \in V_\alpha \}$.
 \end{mydef}
 
 An example of an episode pattern, a sequence and two occurrences is visualized in figure \ref{fig_occurrenceExample}.
@@ -172,7 +172,7 @@ When discovering episodes in a sequence one is usually interested in those episo
   \begin{algorithmic}[1]
     \Statex
     \Function{EpisodeMining}{}
-      \Let{$C_i$}{Episodes of Size 1} 
+      \Let{$C_i$}{Episodes of Length 1} 
       \Let{$freq$}{$\emptyset$}
       \Let{$i$}{$1$}
       \While{$C_i \neq \emptyset$}
@@ -196,7 +196,7 @@ In summary, the general mining algorithm for frequent episodes requires:
 	\item An algorithm to generate candidate episodes
 \end{itemize}
 
-It may be a bit confusing that we need a definition of episode frequency for such a mining algorithm. Since we have already defined what an occurrence of an episode looks like it would seem that counting all occurrences of an episode would yield its frequency. While this is a possible definition of frequency, it is important to note that finding all occurrences of an episode within a sequence is neither practical nor useful. An example will demonstrate the problem with this. Consider the simple serial episode $A \rightarrow B$ and a sequence of length $2\cdot n$ which repeats the subsequence $(A,B)$ $n$ times. One quickly realizes that the number of episode occurrences is very large due to the possibility of overlapping episode occurrences. In this particular case there are already $ \frac{n \cdot (n+1)}{2}$ possible occurrences. This number swiftly increases with the size of the episode pattern, since it introduces more potential overlappings. Naturally the number of possible parallel and composite episode occurrences is even larger, since they are less restrictive in the order of the events. Additionally, such a frequency definition would violate the apriori principle, since subepisodes can have less occurrences than their superepisodes. Consider the example sequence $[A,B,C,A,B,C]$ (timestamp values are left out). In this sequence there are 3 distinct occurences for the episode $A \rightarrow B$ and four distinct occurrences for its superepisode $A \rightarrow B \rightarrow C$. These detrimental effects of this naive frequency definition are nicely summarized by Laxman et. al. in a paper presenting the non-overlapped frequency definition \cite{laxman2007fast}. \newline
+It may be a bit confusing that we need a definition of episode frequency for such a mining algorithm. Since we have already defined what an occurrence of an episode looks like it would seem that counting all occurrences of an episode would yield its frequency. While this is a possible definition of frequency, it is important to note that finding all occurrences of an episode within a sequence is neither practical nor useful. An example will demonstrate the problem with this. Consider the simple serial episode $A \rightarrow B$ and a sequence of length $2\cdot n$ which repeats the subsequence $(A,B)$ $n$ times. One quickly realizes that the number of episode occurrences is very large due to the possibility of overlapping episode occurrences. In this particular case there are already $ \frac{n \cdot (n+1)}{2}$ possible occurrences. This number swiftly increases with the length of the episode pattern, since it introduces more potential overlappings. Naturally the number of possible parallel and composite episode occurrences is even larger, since they are less restrictive in the order of the events. Additionally, such a frequency definition would violate the apriori principle, since subepisodes can have less occurrences than their superepisodes. Consider the example sequence $[A,B,C,A,B,C]$ (timestamp values are left out). In this sequence there are 3 distinct occurences for the episode $A \rightarrow B$ and four distinct occurrences for its superepisode $A \rightarrow B \rightarrow C$. These detrimental effects of this naive frequency definition are nicely summarized by Laxman et. al. in a paper presenting the non-overlapped frequency definition \cite{laxman2007fast}. \newline
 This leads to various frequency definitions of episodes in the literature, which will be dealt with in subsections \ref{subsec_windowBased} and \ref{subsec_otherFrequency}. Each frequency definition comes with its own frequency counting algorithm. The procedure for generating candidates is independent of the frequency definition and is presented in \ref{subsec_candidateGen}. \newline
 %The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
 
@@ -207,22 +207,22 @@ To the best of our knowledge the window based frequency was the first frequency 
 
 \begin{mydef}
 \label{def_timeWindow}
-\textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the size of Window $W$.
+\textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the duration of Window $W$. We denote the size of the window, meaning the number of events in it as $|W|$.
 \end{mydef}
 
-An example of how windows of a fixed size are located in a sequence of events is presented in figure \ref{fig_windowBasedFrequency}.
+An example of how windows of a fixed duration are located in a sequence of events is presented in figure \ref{fig_windowBasedFrequency}.
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{windowBasedFrequency}
-	\caption{Different time windows of size 5 in an event sequence.}
+	\caption{Different time windows of duration 5 in an event sequence.}
 	\label{fig_windowBasedFrequency}
 \end{figure}
 
 
 \begin{mydef}
 \label{def_windowBasedFrequency}
-\textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window size of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with size $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$. %TODO: incorporate sequence bounds and number of windows
+\textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window duration of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with duration $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$. %TODO: incorporate sequence bounds and number of windows
 \end{mydef}
 
 
@@ -281,9 +281,9 @@ This leads to the Definition:
 When looking at these definitions in comparison to the window based frequency definition it is not clear whether any of these is always superior to or more useful than the other since they have different properties. We mention them briefly:
 
 \begin{itemize}
-	\item As already mentioned the window based frequency counts an episode occurrence that is comprised of the same events in multiple windows. This might especially distort the count if the window size is high and the events in the episode happen with minimal delay between them.
+	\item As already mentioned the window based frequency counts an episode occurrence that is comprised of the same events in multiple windows. This might especially distort the count if the window duration is high and the events in the episode happen with minimal delay between them.
 	\item The minimal occurrence based definition of frequency does not suffer from the problem of the previous point
-	\item The window based definition has the advantage that it already incorporates a fixed size during which episodes may occur, meaning there can not be episodes that stretch over a time period larger than the fixed window size $w$. This might be beneficial for potential algorithms, since it reduces the search space for episodes. On top of that it is also closer to reality, since in many domains episodes happen within a small time window \cite{generatingEpisodeDatasets}.
+	\item The window based definition has the advantage that it already incorporates a fixed duration during which episodes may occur, meaning there can not be episodes that stretch over a time period larger than the fixed window duration $w$. This might be beneficial for potential algorithms, since it reduces the search space for episodes. On top of that it is also closer to reality, since in many domains episodes happen within a small time window \cite{generatingEpisodeDatasets}.
 	\item The non-overlapping occurrence based frequency offers the fastest counting algorithm of all three definitions. However when incorporating expiry times for serial episodes it looses this advantage. Additionally previous literature has not yet identified an efficient algorithm to count non-overlapped occurrences of parallel episodes with expiry times. 
 \end{itemize}
 
