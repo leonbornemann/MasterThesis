@@ -8,13 +8,19 @@
     \graphicspath{{Chapter5/Figs/Vector/}{Chapter5/Figs/}}
 \fi
 
-This chapter explains the empirical evaluation of the methods suggested in chapter (TODO: Referecne). Section \ref{sec_applicationDomain} presents the application domain and the associated dataset. Section \ref{sec_transformation} then follows up with a description of small adjustments to the sugested algorithm as well as transformations applied to the dataset. Subsequently section \ref{sec_evaluationMetrics} explains the choice of evaluation metrics. Finally section \ref{sec_evaluationResults} presents the evaluation results and explains the observations made from the plots.
+This chapter explains the empirical evaluation of the methods suggested in chapter \ref{chapter_solutions}. Section \ref{sec_applicationDomain} presents the application domain and the associated dataset. Section \ref{sec_transformation} then follows up with a description of small adjustments to the sugested algorithm as well as transformations applied to the dataset. Subsequently section \ref{sec_evaluationMetrics} explains the choice of evaluation metrics. Finally section \ref{sec_evaluationResults} presents the evaluation results and explains the observations made from the plots.
 
 \section{Application Domain and Dataset}
 \label{sec_applicationDomain}
 
 \subsection{Dataset}
-As mentioned in the introduction the application domain for the streaming prediction algorithms conceived in this thesis is financial data. Basic approaches and challenges in the forecasting of financial time series have already been covered in the related work chapter (TODO: reference). The specific dataset used in this thesis was created using the (unofficial) yahoo API for stock market data (TODO: referenes). The dataset has the following properties:
+As mentioned in the introduction the application domain for the streaming prediction algorithms conceived in this thesis is financial data. Basic approaches and challenges in the forecasting of financial time series have already been covered in the related work chapter (see section \ref{sec_stock_market_prediction}). The specific dataset used in this thesis was created using the (unofficial) yahoo API for stock market data (TODO: referenes)
+\\
+http://meumobi.github.io/stocks%20apis/2016/03/13/get-realtime-stock-quotes-yahoo-finance-api.html 
+http://brusdeylins.info/tips_and_tricks/yahoo-finance-api/
+https://policies.yahoo.com/us/en/yahoo/terms/product-atos/apiforydn/index.htm
+
+. The dataset has the following properties:
 \begin{itemize}
 	\item It contains data about all companies traded at the NASDQ (TODO: cite/explain), which is the main financial stock exchange of the USA
 	\item For the purpose of this paper these companies are filtered by whether they have an entry in the dbpedia (TODO: cite), which is a source for semantic knowledge. This reduces the number of companies of interest to 40.
@@ -32,9 +38,25 @@ The yahoo finance api offers data for private use only, which unfortunately mean
 
 \section{Dataset Transformation and Algorithm Adjustments}
 \label{sec_transformation}
-Since the algorithms introduced in chapter TODO: reference work on event data streams, meaning streams of categorical values (episodes are only defined for categorical event types). Since however the dataset described in section \ref{sec_applicationDomain} in its base form has numerical values, these numerical streams need to be transformed to categorical streams, in which the prediction of a specific event type is of interest. There are many different ways of transforming the numerical data streams, neither of which are necessarily right or wrong. The most simple transformation is a simple comparison of the current value of a stock to the previous value. This will result in three different event types per company: \textit{DOWN}, \textit{EQUAL} and \textit{UP}. This will result in a stream with a lot of events, which makes the episode mining task hard, since there is a lot of data to consider. The amount of data can be reduced by discarding events of type \textit{EQUAL}. \\
-Another possible way of transforming the data is by doing aggregation until a change of a certain amount can be found (for example at least 1\% of the original value). Aggregation in this form will produce much less annotated events. A disadvantage of this approach however is that the main evaluation metric which is to be used (rate of return, see TODO: reference) might be skewed if the stream is aggregated (TODO: example for that?).\\
-For these reasons the numerical streams were transformed without aggregation and without considering events of type \textit{EQUAL}.
+
+TODO: 
+
+
+\subsection{Dataset Transformation}
+
+Since the algorithms introduced in chapter \ref{chapter_solutions} work on event data streams, meaning streams of categorical values (episodes are only defined for categorical event types). Since however the dataset described in section \ref{sec_applicationDomain} in its base form has numerical values, these numerical streams need to be transformed to categorical streams, in which the prediction of a specific event type is of interest. There are many different ways of transforming the numerical data streams, neither of which are necessarily right or wrong. The most simple transformation is a simple comparison of the current value of a stock to the previous value. This produces three different event types per company: \textit{DOWN}, \textit{EQUAL} and \textit{UP}. This will result in a stream with a lot of events, which makes the episode mining task hard, since there is a lot of data to consider. The amount of data can be reduced by discarding events of type \textit{EQUAL}, which are generally less interesting than up or down movements. \\
+Another possible way of transforming the data is by doing aggregation until a change of a certain amount can be found (for example at least 1\% of the original value). Aggregation in this form will produce much less annotated events. A disadvantage of this approach however is that the the usefulness of predictions might suffer. This is due to the fact that if events are aggregated over time the UP-event for a company at timestamp $t$ does not mean that its stock suddenly increases at timestamp $t$, but instead means that a gradual increase by 1\% finishes at timestamp $t$. Thus if the model predicts such an Up-event shortly before $t$ and chooses to invest, the net-gain will not be 1\% but probably much less. For these reasons the numerical streams were transformed without aggregation and without considering events of type \textit{EQUAL}.
+
+\subsection{Adjustments to PERMS}
+Since we are now in the concrete use-case of predicting stock movements, we need to slightly adjust the PERMS algorithm presented in chapter \ref{chapter_solutions}. Recall that PERMS builds a model to predict one specific event. Say we have a company $C$ and we want to use the output of a predictive model to automatically buy or sell stocks of $C$. There are two events that we need to predict for that, which are $C_UP$ and $C_DOWN$. If we assume that buying or selling stocks does not cost a fee, false positives of the models with the stock value of $C$ remaining equal do not hurt the investment. \\
+Instead of building two models we slightly adjust the window mining process as shown in figure TODO.
+
+ TODO: how the hell do I describe what I did in PERMS??
+
+\subsection{Adjustments to FBSWC}
+The FBSWC algorithm does not need to be changed as much, the only thing that changes, is that for a company $C$ the classification task is no longer binary. Instead there are now three classes: $\{UP,EQUAL,DOWN\}$. Like in the adjustment to PERMS positive, neutral and negative windows can be mined from the stream and used as training examples for the feature based classifier. \\
+As a feature based classifier, the random forest was chosen, since it offers good classification time and can be adjusted to work with incremental updates, should one consider to evolve the model as the stream progresses.\\
+Also a feature selection approach must be chosen. A simple but effective approach is continous feature selection using Filter-Schemes \cite{molina2002feature}, in which features are assigned weights based on their usefulness (according to some measure). Afterwards the features are ranked according to their weights and the best are chosen. In the experiments that were done in Chapter , the continous feature selection using the Filter-Scheme with information gain (TODO: define information gain) as a measure was used. As a feature based classifier a random forest was used.
 
 \section{Evaluation Metrics}
 \label{sec_evaluationMetrics}
