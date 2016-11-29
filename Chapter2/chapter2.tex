@@ -58,6 +58,8 @@ Another important term that was not explicitly defined in the event processing g
 \textbf{Type Alphabet} The type alphabet, often simply called the event alphabet, is the set of all possible event types that can occur in the observed system.
 \end{mydef}
 
+TODO: example here
+
 Event alphabets are often implicitly defined when mining frequent itemsets, patterns or episodes.
 So far we have looked at events without considering the scenario we are most interested in which are event streams. To do so we need the notion of timestamps:
 
@@ -90,7 +92,7 @@ As already mentioned in the introduction data streams present a challenge to dat
 
 \subsection{Data Stream Mining Taxonomy}
 \label{subsec_dataStreamMiningTaxonomy}
-Many research areas in classical data mining are also of interest when processing streams. As already mentioned in the introduction however, data streams impose severe restrictions on the algorithms, such them having to use only one pass over the data and that they should be incremental. Normally data mining algorithms for the classical scenario in which the underlying data is a static database or even a data-set that fits into main memory have these properties. Thus the algorithms need to be modified and often approximations have to be made. A comprehensive basic overview over the application of different data mining tasks and how they can be applied to streams was comprised by Gaber et. al. \cite{gaber2005mining}. Note that the paper by Gaber et. al. was published in 2005, so quite a lot of work has been done since then, which means that these papers are obviously not present in their literature review. However the overview provided by the authors is still very useful, since it brings structure to the large field of data stream mining. A taxonomy that follows the basic structure of the paper by Gaber et. al. is visualized in figure \ref{fig_streamMiningTaxonomy}.
+Many research areas in classical data mining are also of interest when processing streams. As already mentioned in the introduction however, data streams impose severe restrictions on the algorithms, such them having to use only one pass over the data and that they should be incremental. Most data mining algorithms for the classical scenario in which the underlying data is a static database do not satisfy these properties. Thus the algorithms need to be modified and often approximations have to be made. A comprehensive basic overview over the application of different data mining tasks and how they can be applied to streams was comprised by Gaber et. al. \cite{gaber2005mining}. Note that the paper by Gaber et. al. was published in 2005, so quite a lot of work has been done since then, which means that these papers are obviously not present in their literature review. However the overview provided by the authors is still very useful, since it brings structure to the large field of data stream mining. A taxonomy that follows the basic structure of the paper by Gaber et. al. is visualized in figure \ref{fig_streamMiningTaxonomy}.
 
 \begin{figure}[h]
 	\centering
@@ -144,7 +146,7 @@ TODO: is it actually necessary to look at this - the really relevant stuff is do
 
 \subsection{Time Series Analysis in Data Streams}
 \label{subsec_timeSeriesAnalysis}
-Before diving deeper into the topic of time series analysis, it is important to distinguish time series from data streams. Both concepts are similar and also have overlapping research areas. In this thesis we speak of a time series if we refer to a temporally ordered sequence of data points, whose time values are sampled at a fixed time interval (QUESTION: is that correct?). Usually time series contain numerical values, examples of such data are:
+Before diving deeper into the topic of time series analysis, it is important to distinguish time series from data streams. Both concepts are similar and also have overlapping research areas. In this thesis we speak of a time series if we refer to a temporally ordered sequence of data points. Usually time series contain numerical values, examples of such data are:
 
 \begin{itemize}
 	\item values of a stock market index over a trading day
@@ -156,7 +158,6 @@ Data streams are also ordered sequences of data. The important distinctions betw
 
 \begin{itemize}
 	\item Data streams continuously have new data points coming in, thus are continuously growing. This does not have to be the case for time series data. A database that records electrocardiography readings of different patients still contains time series data, however these are not data streams, since the readings are finished and no longer updating.
-	\item Data Streams do not have to be sampled at the same time interval, in fact varying time delay between data points is very common here.
 	\item In contrast to time series it is common in data streams to have streams of categorical values or events, whereas values of time series are usually numeric.
 \end{itemize}
 
