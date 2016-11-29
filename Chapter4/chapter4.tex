@@ -322,6 +322,8 @@ In order to understand the approach of FBSWC, it is best to take a step back and
 	\item $W$ is not followed by $A$
 \end{itemize}
 
+\subsection{FBSWC Parameters and Pseudocode}
+
 If we are able to map a window $W$ into a fitting feature space, we can train a feature based classifier on our training examples, whose mining is specified in algorithm \ref{alg_traningExampleMining}. The basic idea of FBSWC is to mine frequent episodes from both the positive as well as the negative examples, and then map each window to a feature space. The mapping works in the following: If $E$ is the set of frequent episodes, each episode will be mapped to a boolean feature, that is $true$ for an example $W$ if $\alpha$ occurs in $W$ and $false$ otherwise. The algorithm for FBSWC is given in algorithm \ref{alg_FBSWC}.
 
 \begin{algorithm}[H]
