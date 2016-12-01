@@ -8,16 +8,16 @@
     \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}}
 \fi
 
-This chapter establishes the terminology and basic formal definitions for this thesis and defines the problem of mining predictive episodes in a semi formal way (TODO: do that!).
+This chapter establishes the terminology and basic formal definitions for this thesis.
 
 \section{Episode Mining Background}
 \label{sec_episodeMiningBackground}
 
-While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is important in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. The rest of this section is divided as follows: %TODO: Subsection \ref{subsec_basicEpisodeDefinitions} formally introduces the concept of episodes, subsection \ref{subsec_episodeDiscovery} then follows  up with 
+While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is important in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. 
 
 \subsection{Basic Definitions}
 \label{subsec_basicEpisodeDefinitions}
-As already mentioned, episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
+Episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
 
 \begin{mydef}
 \label{def_episode}
@@ -95,7 +95,7 @@ A composite episode is either:
 \end{itemize}
 
 This definition has the advantage that any elementary episode can be represented as a composite episode which is exclusively a serial or parallel composition of serial, parallel or composite subepisodes (see definition \ref{def_subEpisode}). Note that composite episodes are not more expressive than elementary episodes as defined in definition \ref{def_episode}, it is just a recursive way of defining episodes. \\
-Interestingly, there are other parts of the related work that use the term \textit{composite episodes} but deviate from definition \ref{def_compositeEpisodes}. For example Baathorn et. al. propose a method for finding composite episodes \cite{bathoorn2007finding}. However they define composite episodes as a sequence of parallel episodes, which is more restrictive than the original definition. Also Baumgarten et. al. use this definition \cite{baumgarten2003tree} when they present an approach to mine descriptive composite episodes. Note that not all elementary episodes can be represented as sequences of parallel episode. A simple example shown in figure \ref{fig_notSequenceOfSet} illustrates this. If the presented episode were to be represented as a sequence of parallel episodes obviously $A$ and $B$ would have to be in different parallel episodes in order to fulfill the requirement that $B$ must be after $C$. After that the problem is that it is impossible to assign $C$ to any of those sets. If it gets assigned to the same parallel episode set as $A$ then this would prohibit $A$ and $B$ occurring first followed by $C$, which is allowed in the original definition. Likewise if $C$ gets assigned to the same parallel episode as $B$ then that eliminates the possibility of $C$ occurring before $A$ and $B$, which once again was allowed in the elementary episode. In this thesis we will stick to the original definition as presented in definition \ref{def_compositeEpisodes}. \newline
+Interestingly, there are other parts of the related work that use the term \textit{composite episodes} but deviate from definition \ref{def_compositeEpisodes}. For example Baathorn et. al. propose a method for finding composite episodes \cite{bathoorn2007finding}. However they define composite episodes as a sequence of parallel episodes, which is more restrictive than the original definition. Also Baumgarten et. al. use this definition \cite{baumgarten2003tree} when they present an approach to mine descriptive composite episodes. Note that not all elementary episodes can be represented as sequences of parallel episode. A simple example shown in figure \ref{fig_notSequenceOfSet} illustrates this.
 
 \begin{figure}[h]
 	\centering
@@ -104,6 +104,7 @@ Interestingly, there are other parts of the related work that use the term \text
 	\label{fig_notSequenceOfSet}
 \end{figure}
 
+If the presented episode were to be represented as a sequence of parallel episodes obviously $A$ and $B$ would have to be in different parallel episodes in order to fulfill the requirement that $B$ must be after $C$. After that the problem is that it is impossible to assign $C$ to any of those sets. If it gets assigned to the same parallel episode set as $A$ then this would prohibit $A$ and $B$ occurring first followed by $C$, which is allowed in the original definition. Likewise if $C$ gets assigned to the same parallel episode as $B$ then that eliminates the possibility of $C$ occurring before $A$ and $B$, which once again was allowed in the elementary episode. In this thesis we will stick to the original definition as presented in definition \ref{def_compositeEpisodes}. \newline
 If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures. \newline 
 In algorithms we use the following notation to access episodes:
 
@@ -145,7 +146,7 @@ Given the notion of an event sequence we can now define episode occurrences:
 \textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ we can define an occurrence of $\alpha$ as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V\alpha : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds. \cite{mannila1995discovering}
 \end{mydef}
 
-A classic episode pattern as defined in (TODO) in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence. Durations of episode occurrences become relevant in practical applications, when we want to forbid episode occurrences that range over a time period that is too large. 
+An episode pattern in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence. Durations of episode occurrences become relevant in practical applications, when we want to forbid episode occurrences that range over a time period that is too large. 
 
 \begin{mydef}
 \label{def_episodeOccurrence}
@@ -283,7 +284,7 @@ When looking at these definitions in comparison to the window based frequency de
 \begin{itemize}
 	\item As already mentioned the window based frequency counts an episode occurrence that is comprised of the same events in multiple windows. This might especially distort the count if the window duration is high and the events in the episode happen with minimal delay between them.
 	\item The minimal occurrence based definition of frequency does not suffer from the problem of the previous point
-	\item The window based definition has the advantage that it already incorporates a fixed duration during which episodes may occur, meaning there can not be episodes that stretch over a time period larger than the fixed window duration $w$. This might be beneficial for potential algorithms, since it reduces the search space for episodes. On top of that it is also closer to reality, since in many domains episodes happen within a small time window \cite{generatingEpisodeDatasets}.
+	\item The window based definition has the advantage that it already incorporates a fixed duration during which episodes may occur, meaning there can not be episodes that stretch over a time period larger than the fixed window duration $w$. This might be beneficial for potential algorithms, since it reduces the search space for episodes. On top of that it is also closer to reality, since in many domains episodes happen within a small time window.
 	\item The non-overlapping occurrence based frequency offers the fastest counting algorithm of all three definitions. However when incorporating expiry times for serial episodes it looses this advantage. Additionally previous literature has not yet identified an efficient algorithm to count non-overlapped occurrences of parallel episodes with expiry times. 
 \end{itemize}
 
@@ -309,10 +310,10 @@ The same procedure can be applied to serial episodes, except that
 \end{itemize}
 
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
-Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes (TODO: refer to later chapter, since I will do that). For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. %TODO: expand this subsection if needed
+Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes. For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. 
 
 \section{Problem Definition}
-As already mentioned before the problem to be tackled in this thesis is the prediction of future events in data streams using episodes. The approaches shall have the following properties:
+The problem to be tackled in this thesis is the prediction of future events in data streams using episode patterns. The approaches shall have the following properties:
 
 \begin{itemize}
 	\item \textbf{Local and fast prediction:} We do not focus on long term trends or on predictions of special values at fixed times (for example daily closing values of stocks), but instead aim to give predictions about the near future given the current state of the stream.
@@ -335,23 +336,20 @@ Note that this definition is essentially the same as definiton \ref{def_eventSeq
 If the original underlying data source is a low level event stream it needs to be transformed to an annotated event stream, which can be done via a transformation procedure:
 
 \begin{mydef}
-\textbf{Tranformation Procedure} A transformation procedure is a mapping $f$ that takes a low level event stream $LLES$ as an input and outputs an annotated event stream $AES$ as well as the corresponding event aphabet $\Sigma$.
+\textbf{Tranformation Procedure} A transformation procedure is a mapping $f$ that takes a low level event stream $LLES$ as an input and outputs an annotated event stream $AES$ as well as the corresponding event alphabet $\Sigma$.
 \end{mydef}
 
-Note that the selection or development of the transformation procedure is extremely important for the success of the subsequent mining of the annotated event stream. If the annotated events that are generated are largely meaningless due to a suboptimal transformation it is unlikely that the mining process will discover episodes that are helpful to predict occurrences of the desired events. 
-TODO: Aggregation, discretization
-If the low level annotated stream is processed in an online scenario, it is necessary to also do the transformation in an online way, which imposes additional restrictions on the transformation process (TODO: exmplain those).
+Note that the selection or development of the transformation procedure is extremely important for the success of the subsequent mining of the annotated event stream. If the annotated events that are generated are largely meaningless due to a suboptimal transformation it is unlikely that the mining process will discover episodes that are helpful to predict occurrences of the desired events. If the low level annotated stream is processed in an online scenario, it is necessary to also do the transformation in an online way, which imposes additional restrictions on the transformation process. It is for example not possible to decide at any point in time, that an event happened in the past, since this would disturb the order of the annotated event stream.
 
-Given an annotated event stream $AES$ it is the goal of this thesis to develop algorithms that will build predictive models:
+Given an annotated event stream it is the goal of this thesis to develop algorithms that will build predictive models:
 
 \begin{mydef}
 \label{def_predictiveModel}
-\textbf{Predictive Model} A predictive model for $M(T)$, $T \in Sigma$ is a model that if given the current state of an annotated event stream will output a binary value in the following:
+\textbf{Predictive Model} A predictive model for $M(T)$, $T \in Sigma$ is a model that if given a window $W$ (see definition \ref{def_timeWindow}) of an annotated event stream will output a binary value in the following:
 \begin{itemize}
-	\item $1$ if the model expects an event of type $T$ to occur in the stream in the near future
+	\item $1$ if the model expects an event of type $T$ to occur shortly after $W$.
 	\item 0 otherwise.
 \end{itemize} 
 \end{mydef}
 
-Definition \ref{def_predictiveModel} purposefully remains rather general and thus vague, since a predictive model can naturally function in many ways. Thus some of the key points, such as what is the state of a stream and what exactly does the term "near future" mean mathematically remain unspecified here and instead will be specified by the concrete algorithms. 
-Nevertheless one should note that in most streaming scenarios we cannot store the whole stream, meaning it is impractical for a model to demand that the current state of the stream is defined by its entire history. Likewise a model may define that the "near future" means an extremely long time, thus most likely making the model correct if it simply outputs $1$ every time, however such a model is obviously not very useful.
+Definition \ref{def_predictiveModel} purposefully remains vague about what \textit{"shortly after"} means mathematically, since this may depend on the underlying stream, or the users intent.

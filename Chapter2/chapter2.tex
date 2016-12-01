@@ -58,8 +58,6 @@ Another important term that was not explicitly defined in the event processing g
 \textbf{Type Alphabet} The type alphabet, often simply called the event alphabet, is the set of all possible event types that can occur in the observed system.
 \end{mydef}
 
-TODO: example here
-
 Event alphabets are often implicitly defined when mining frequent itemsets, patterns or episodes.
 So far we have looked at events without considering the scenario we are most interested in which are event streams. To do so we need the notion of timestamps:
 
@@ -97,11 +95,11 @@ Many research areas in classical data mining are also of interest when processin
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{streamMiningTaxonomy}
-	\caption{A taxonomy of the research areas of data stream mining. The subcategories that are marked green are the categories to which this thesis will make contributions.}
+	\caption{A taxonomy of the research areas of data stream mining.}
 	\label{fig_streamMiningTaxonomy}
 \end{figure}
 
-As can be seen in the figure the state of the art in data stream mining can be roughly divided into three basic parts:
+Figure \ref{fig_streamMiningTaxonomy} shows that the state of the art in data stream mining can be roughly divided into three basic parts:
 
 \begin{enumerate}
 	\item Theoretical Foundations
@@ -137,12 +135,12 @@ The second category contains the actual mining techniques and applications, whic
 \end{itemize}
 
 The last category in the taxonomy is less focused on research issues and conceptual or algorithmic problems but instead lists the existing data stream processing systems (to that date). Since that is less relevant to this thesis we do not mention or describe existing systems but instead refer the interested reader to the original paper by Gaber et. al. \cite{gaber2005mining}. \\
-As visualized in figure \ref{fig_streamMiningTaxonomy} this thesis mainly deals with the subtopics of time series data and pattern mining, which is why these two areas of work will now be inspected more closely in the next subsections
+As already mentioned this thesis mainly deals with the subtopics of time series data and pattern mining, which is why these two areas of work will now be inspected more closely in the next subsections
 
 \subsection{Pattern Mining in Data Streams}
 \label{subsec_PatternMining}
 
-TODO: is it actually necessary to look at this - the really relevant stuff is done in the episode mining section
+TODO: general approaches of pattern mining in data streams!
 
 \subsection{Time Series Analysis in Data Streams}
 \label{subsec_timeSeriesAnalysis}
@@ -162,17 +160,16 @@ Data streams are also ordered sequences of data. The important distinctions betw
 \end{itemize}
 
 The combination of both, a time series data stream, is a time series that is constantly updating, for example an electrocardiography reading that is currently taking place, or stock values that are being recorded over a day. In these cases the time series must be processed online. \newline
-At the first glance this thesis does not seem to be located in the area of time series analysis, since it deals with the mining of complex events. However, since this thesis aims to create a novel method in order to build predictive models using complex events. Predictive models however are commonly build for time series data, since predicting time series (also called forecasting) is of interest in many different domains. Since any novel method needs to be compared to the state of the art it is important to at least give a brief overview, which is what is done here.\\
 Most other research areas in data mining such as clustering or classification are rather focussed in their goals (find an appropriate clustering or build an acurate classifier). In contrast to this the research area of time series analysis is more broad, meaning there are a variety of different objectives that can be of interest when analyzing time series. Thus it is helpful to first get an overview over the most common objectives and techniques in a similar way as the taxonomy for data stream mining visualized in figure \ref{fig_streamMiningTaxonomy}. The main source for this subsection is the book by J. Gama \cite{gama2010knowledge}. Figure \ref{fig_timeSeriesInDataStreamsOverview} visualizes the different areas of interest in time series analysis in data streams mentioned by the author.
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{timeSeriesInDataStreamsOverview}
-	\caption{An overview over the different research areas in time series analysis in data streams. The subcategories that are marked green are the categories, which are of interest in thesis and thus will be looked at more closely.}
+	\caption{An overview over the different research areas in time series analysis in data streams. The subcategory \textit{"Prediction"} is marked green, since it is of special interest in this thesis and thus will be discussed more extensively than the others.}
 	\label{fig_timeSeriesInDataStreamsOverview}
 \end{figure}
 
-Note that the research area of time series analysis is large and therefore there are important subareas that are not mentioned by the author. Examples of such research areas are curve fitting, function approximation and time series segmentation (QUESTION: Do I need citations for these?). We briefly go over the different areas that are mentioned by J. Game but are not particularly relevant to this thesis:
+Note that the research area of time series analysis is large and therefore there are important subareas that are not mentioned by the author. Examples of such research areas are curve fitting, function approximation and time series segmentation. We briefly go over the different areas that are mentioned by J. Gama but are not particularly relevant to this thesis:
 
 \begin{itemize}
 	\item \textbf{Time Series Patterns and Properties:} A lot of time series can be categorized according to their behavior and can be said to have certain properties. Among these are for example long term trends, seasonality (cyclic behavior) and stationarity ( mean, variance and autocorrelation are constant).
@@ -180,7 +177,7 @@ Note that the research area of time series analysis is large and therefore there
 	\item \textbf{Symbolic Approximation:} Symbolic Approximation is a technique that aims to discretize time series into a string of arbitrary length. It can be of interest if one wants to apply algorithms that work on strings or categorical data to time series.
 \end{itemize}
 
-As already mentioned time series prediction (also called forecasting) is relevant for this thesis due to the empirical evaluation which uses financial time series data. Thus, instead of giving a detailed overview over the general topic of time series prediction, we remain rather broad in this subsection and instead we devote the next subsection to exclusively report the state of the art on the prediction of financial time series. \\
+Obviously, time series prediction (also called forecasting) is a large research area, which is often specialized for individual domains. Therefore, we will give a broad overview here and go into more detail in the next subsection, where we report the state of the art on the prediction of financial time series. \\
 Very broadly forecasting methods can be divided into linear and non-linear methods. Linear models are usually simpler, but are at a disadvantage when the underlying model is non-linear \cite{zhang2003time}. Non-linear methods, such as neural networks are more powerful, in fact it has been shown that neural networks can in theory model any non-linear function \cite{abraham2005artificial} \cite{funahashi1989approximate}. However, building and training an actual neural network is a difficult task, since multiple design choices (such as the number of hidden neurons, the activation function and the initial weights) need to be made, which usually requires expert knowledge of both the underlying domain as well as neural networks in general in order to train an appropriate network \cite{abraham2005artificial}. Researchers have also tried to combine both approaches in order to form hybrid methods \cite{zhang2003time}. \newline
 Neural networks were originally conceived as batch methods, meaning there were used in an offline scenario with no new data coming in constantly. However adapting them to the stream environment is surprisingly simple in most cases and has been done on multiple occasions \cite{chang2002real} \cite{frank2001time}. In fact, the streaming environment can be beneficial to neural network training, since training a neural network in a static environment usually means making multiple passes over the training data, due to the lack of training data. If done incorrectly this can result in overlearning the training data and thus poor generalization. In the streaming environment however, there is an abundance of data, which means that each example has to be processed only once \cite{gama2010knowledge}. \newline
 Predicting or forecasting time series values is normally very domain specific which results in different domains having their own specialized forecasting methods or specific modifications of popular general predictive models. Some of the domains in which time series forecasting is relevant are:
@@ -191,9 +188,7 @@ Predicting or forecasting time series values is normally very domain specific wh
 	\item Forecasting the power output of solar energy plants \cite{inman2013solar}
 \end{itemize}
 
-TODO: a few more sentences about forecasting in different domains and why...
 
-QUESTION: maybe explain neural networks ?
 %As already mentioned many data mining algorithms for data streams make compromises of some sort or employ appoximations. Especially in the area of pattern mining there are quite a few approaches that use approximations or focus on the most recent data. Gianella et. al. have for example developed an algorithm to incrementally maintain approximately frequent itemsets for the most recent time windows using tilted time window frames \cite{giannella2003mining}. Approaches to mine frequent items without tilting the time windows exist as well, such as the sticky sampling or the lossy counting algorithm \cite{manku2002approximate}. These algorithms can be generalized to mine frequent itemsets, too. If this is done however pruning the candidates may become an issue if the main memory is small (the number of candidates to maintain may be too large). \newline
 %A paper also related to regression and time series forecasting was published by Papadimitriou et. al. \cite{papadimitriou2003adaptive}. The authors tackle the problem of cyclic time series mining, as well as time series prediction of numerical values in potentially infinite data streams. \newline
 %The rise in popularity of mining data streams also pushes research areas like distributed data mining, in which parallelized versions of data mining algorithms are researched. Large data streams and distributed systems often go hand in hand, which creates the need for distributed algorithms. Such solutions have been researched for example for frequent pattern mining \cite{lin2015fast}, association rule mining \cite{ashrafi2004odam}, clustering \cite{januzaj2004dbdc} and classification (in this case a distributed boosting algorithm) \cite{lazarevic2001distributed}. \newline
@@ -254,7 +249,7 @@ Most of the visualized information in figure \ref{fig_financialTimeSeriesPredict
 
 \begin{itemize}
 	\item \textbf{Target:} The target that is to predict can in theory be any financial index, indicator or price of interst. Many researchers tried to forecast the movement of stock indices \cite{zhang2009stock},\cite{van2001financial}, \cite{kumar2006forecasting} . However, also individual stocks have received attention \cite{mahfoud1996financial}. 
-	\item \textbf{Performance Measures:} When building models it is crucial to measure their performance to enable comparison to other models. The number of different performance measures in this case is surprisngly large and diverse. The employed measures range from economic measures, such as the annual rate of return or the Hit-Rate to more technical measures such as the average percentage error or the mean squared error to only name a few. It is impractical to visualize or enumerate all measures that are in use, thus we limit ourselves to the previous examples. For a comprehensive list we refer the reader to the literature study by Atsalakis et. al. \cite{atsalakis2009surveying}.
+	\item \textbf{Performance Measures:} When building models it is crucial to measure their performance to enable comparison to other models. The number of different performance measures in this case is surprisingly large and diverse. The employed measures range from economic measures, such as the annual rate of return or the Hit-Rate to more technical measures such as the average percentage error or the mean squared error to only name a few. It is impractical to visualize or enumerate all measures that are in use, thus we limit ourselves to the previous examples. For a comprehensive list we refer the reader to the literature study by Atsalakis et. al. \cite{atsalakis2009surveying}.
 	\item \textbf{Input Variables:} In real world scenarios this is probably the most important category. No matter which kind of elaborate model is built, if the choice of the input variables is poor, meaning they contain little information, then the model built from those simply can not perform well. This is especially true for financial time series, since those are known to be chaotic and noisy \cite{zhang2009stock}. In fact there are researchers that argue that financial time series follow the principle of random walks which would imply that accurately, meaning better than random, forecasting financial time series based on historical data is impossible. \cite{fama1965behavior}. However there is a considerable amount of papers that suggest otherwise, since accurate prediction results have been achieved by multiple authors based on multiple different forecasting methods (see the literature study by Atsalakis et. al. for examples \cite{atsalakis2009surveying} ). Input variables for stock market prediction are almost always past stock data. Sometimes other financial indicators are used as well. Examples include different stock indices, gold price or currency exchange rates.
 	\item \textbf{Prediction Methods:} While figure \ref{fig_financialTimeSeriesPredictionOverview} mentions many different approaches to the forecasting of stock markets, a large majority of the published papers in this area uses some form of neural network. In fact Atsalakis et. al. note that 60\% of the papers they surveyed use feed forward Neural Networks and recurrent networks \cite{atsalakis2009surveying}. 
 \end{itemize}
