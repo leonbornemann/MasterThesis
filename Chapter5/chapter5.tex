@@ -14,7 +14,7 @@ This chapter explains the empirical evaluation of the methods suggested in chapt
 \label{sec_applicationDomain}
 
 \subsection{Dataset}
-As mentioned in the introduction the application domain for the streaming prediction algorithms conceived in this thesis is financial data. Basic approaches and challenges in the forecasting of financial time series have already been covered in the related work chapter (see section \ref{sec_stock_market_prediction}). The dataset was assembled using data provided by the Yahoo Finance website \cite{yahooFinance} The dataset has the following properties:
+As mentioned in the introduction the application domain for the streaming prediction algorithms conceived in this thesis is financial data. Basic approaches and challenges in the forecasting of financial time series have already been covered in the related work chapter (see section \ref{sec_stock_market_prediction}). The dataset was assembled using data provided by the Yahoo Finance website \cite{yahooFinance}. The dataset has the following properties:
 \begin{itemize}
 	\item It contains data about all companies traded at the National Association of Securities Dealers Automated Quotations (NASDAQ), which is the second largest stock exchange of the USA.
 	\item The data-set contains tick-data that was sampled at a 15-second interval (meaning Yahoo Finance was polled for the current value every 15 seconds).
@@ -25,7 +25,7 @@ As mentioned in the introduction the application domain for the streaming predic
 
 \subsection{Data Quality}
 \label{subsec_dataQuality}
-The yahoo Finance Website is a free to use data source and while it does display the current stock prices, there are no quality guarantees given. Thus there might be errors or inaccuracies in the derived dataset. Thus the evaluation must proceed cautiously, since the quality of the underlying data is unknown. In fact, when examining the values of individual companies in the derived dataset there are sometimes significant jumps from one value to another. The main problem here is that it is impossible to tell whether those jumps are due to errors, or delayed updates on the server side or whether they are caused by large buy or sell actions, for example by high-frequency traders. For this reason the evaluation will consider them in a special manner, once including them and once filtering them out (dismissing them as invalid data) in order to evaluate model performances for both cases (TODO: do we actually still do that? Remove this when the rest of this chapter is finished). 
+The yahoo Finance Website is a free to use data source and while it does display the current stock prices, there are no quality guarantees given. Thus there might be errors or inaccuracies in the derived dataset. Thus the evaluation must proceed cautiously, since the quality of the underlying data is unknown. In fact, when examining the values of individual companies in the derived dataset there are sometimes significant jumps from one value to another. The main problem here is that it is impossible to tell whether those jumps are due to errors, or delayed updates on the server side or whether they are caused by large buy or sell actions, for example by high-frequency traders.  
 
 \subsection{Restrictive Use of Data}
 The yahoo finance website offers data for private use only, which unfortunately means that the author of this thesis is not able to publish the dataset obtained by querying the yahoo finance website, as that would be a redistribution of the original data, which is explictly prohibited by the Yahoo Terms of Use \cite{yahooTermsDeveloper}.
@@ -33,12 +33,10 @@ The yahoo finance website offers data for private use only, which unfortunately 
 \section{Dataset Transformation and Algorithm Adjustments}
 \label{sec_transformation}
 
-TODO: 
-
 
 \subsection{Dataset Transformation}
 
-Since the algorithms introduced in chapter \ref{chapter_solutions} work on event data streams, meaning streams of categorical values (episodes are only defined for categorical event types). Since however the dataset described in section \ref{sec_applicationDomain} in its base form has numerical values, these numerical streams need to be transformed to categorical streams, in which the prediction of a specific event type is of interest. There are many different ways of transforming the numerical data streams, neither of which are necessarily right or wrong. The most simple transformation is a simple comparison of the current value of a stock to the previous value. This produces three different event types per company: \textit{DOWN}, \textit{EQUAL} and \textit{UP}. This will result in a stream with a lot of events, which makes the episode mining task hard, since there is a lot of data to consider. The amount of data can be reduced by discarding events of type \textit{EQUAL}, which are generally less interesting than up or down movements. \\
+The algorithms introduced in chapter \ref{chapter_solutions} work on event data streams, meaning streams of categorical values (episodes are only defined for categorical event types). Since however the dataset described in section \ref{sec_applicationDomain} in its base form has numerical values, these numerical streams need to be transformed to categorical streams, in which the prediction of a specific event type is of interest. There are many different ways of transforming the numerical data streams, neither of which are necessarily right or wrong. The most simple transformation is a simple comparison of the current value of a stock to the previous value. This produces three different event types per company: \textit{DOWN}, \textit{EQUAL} and \textit{UP}. This will result in a stream with a lot of events, which makes the episode mining task hard, since there is a lot of data to consider. The amount of data can be reduced by discarding events of type \textit{EQUAL}, which are generally less interesting than up or down movements. \\
 Another possible way of transforming the data is by doing aggregation until a change of a certain amount can be found (for example at least 1\% of the original value). Aggregation in this form will produce much less annotated events. A disadvantage of this approach however is that the the usefulness of predictions might suffer. This is due to the fact that if events are aggregated over time the UP-event for a company at timestamp $t$ does not mean that its stock suddenly increases at timestamp $t$, but instead means that a gradual increase by 1\% finishes at timestamp $t$. Thus if the model predicts such an Up-event shortly before $t$ and chooses to invest, the net-gain will not be 1\% but probably much less. For these reasons the numerical streams were transformed without aggregation and without considering events of type \textit{EQUAL}.
 
 \subsection{Adjustments to PERMS}
@@ -50,7 +48,7 @@ Instead of building two models we slightly adjust the window mining process as s
 \subsection{Adjustments to FBSWC}
 The FBSWC algorithm does not need to be changed as much, the only thing that changes, is that for a company $C$ the classification task is no longer binary. Instead there are now three classes: $\{UP,EQUAL,DOWN\}$. Like in the adjustment to PERMS positive, neutral and negative windows can be mined from the stream and used as training examples for the feature based classifier. \\
 As a feature based classifier, the random forest was chosen, since it offers good classification time and can be adjusted to work with incremental updates, should one consider to evolve the model as the stream progresses.\\
-Also a feature selection approach must be chosen. A simple but effective approach is continous feature selection using Filter-Schemes \cite{molina2002feature}, in which features are assigned weights based on their usefulness (according to some measure). Afterwards the features are ranked according to their weights and the best are chosen. In the experiments that were done in Chapter , the continous feature selection using the Filter-Scheme with information gain (TODO: define information gain) as a measure was used. As a feature based classifier a random forest was used.
+Also a feature selection approach must be chosen. A simple but effective approach is continous feature selection using Filter-Schemes \cite{molina2002feature}, in which features are assigned weights based on their usefulness (according to some measure). Afterwards the features are ranked according to their weights and the best are chosen. For the sake of simplicity we chose the continuous feature selection using the Filter-Scheme with information gain (TODO: define information gain) as a feature selection method. As a feature based classifier a random forest was used.
 
 \section{Evaluation Metrics}
 \label{sec_evaluationMetrics}
@@ -157,13 +155,12 @@ box/.style={draw,rectangle,minimum size=2cm,text width=1.5cm,align=left}]
 The classical evaluation metrics accuracy, precision and recall can now easily be applied to this scenario. We briefly repeat their definitions here:
 TODO: define accuracy precision, recall, talk about leaving out equal
 
-\subsection{Corrected Return}
-As mentioned in subsection \ref{subsec_dataQuality} the correctness of the underlying data can not be guaranteed. The fact that there are some significant jumps in stock values may hint at errors in the data in some cases, however it is also plausible that this is in fact normal, volatile behavior of the stock market. In order to account for possible errors, we can define an additional metric, called the corrected return. The corrected return works just like the normal return, except that we exclude test examples in which there was a subsequent increase or decrease by more than $5\%$ of the original value. It is important to keep in mind that this does most likely not represent the true performance, however it does have the benefit of filtering out large outliers. Thus the corrected return can serve as a heuristic that describes how the model would have performed, if the stock value was less volatile.
 
 \section{Evaluation Result}
 \label{sec_evaluationResults}
 
 \subsection{Explorative Analysis}
+\label{subsec_explorativeAnalysis}
 
 As a first exploratory analysis the following configuration was selected for the algorithms:
 
@@ -175,7 +172,7 @@ As a first exploratory analysis the following configuration was selected for the
 	\item $n = 20$ (only relevant for PERMS)
 \end{itemize}
 
-A Model was trained for each approach and for each company, resulting in 80 different models, using this configuration. Figures  \ref{fig_firstRunReturnByCompany} and \ref{fig_firstRunCorrectedReturnByCompany} show the rate of return and corrected rate of return for each model.
+A Model was trained for each approach and for each company, resulting in 80 different models, using this configuration. Figure \ref{fig_firstRunReturnByCompany} shows the rate of return for each model.
 
 \begin{figure}[h]
 	\centering
@@ -184,27 +181,20 @@ A Model was trained for each approach and for each company, resulting in 80 diff
 	\label{fig_firstRunReturnByCompany}
 \end{figure}
 
-\begin{figure}[h]
-	\centering
-  	\includegraphics[width=0.75\textwidth]{firstRunCorrectedReturnByCompany}
-	\caption{Histogram: Corrected Rate of Return}
-	\label{fig_firstRunCorrectedReturnByCompany}
-\end{figure}
-
-Both histograms show that there is quite a large disparity between the different models for the different companies. Table \ref{table_firstRunReturn} shows the average return values over the models, as well as the standard deviation.
+The histograms shows that there is quite a large disparity between the different models for the different companies. Table \ref{table_firstRunReturn} shows the average return values over the models, as well as the standard deviation.
 
 \begin{table}
 \label{table_firstRunReturn}	
 \caption{Mean and STD of the model's Return}
-\begin{tabular}{ c | c | c | c | c}		
-  Model Type & mean(Return)  $[\%]$ & std(Return) $[\%]$ & mean(Corrected Return) $[\%]$ & std(Corrected Return) $[\%]$ \\
+\begin{tabular}{ c | c | c }		
+  Model Type & mean(Return)  $[\%]$ & std(Return) $[\%]$ \\
   \hline
-  PERMS & 44.0 & 124.3 & 22.9 & 27.1\\
-  FBSWC & 45.4 & 107.3 & 13.4 & 43.3\\
+  PERMS & 44.0 & 124.3 \\
+  FBSWC & 45.4 & 107.3 \\
 \end{tabular}
 \end{table}
 
- The first thing to note here is that the mean values of 0.44 and 0.45 for return are extremely high. This essentially means that on average, automatic trading algorithms using the models built by the methods suggested in this paper would make a profit of $44\%$ or $45\%$ respectively. Even for the much lower values of corrected return, which filters out outliers, the models still achieve $22\%$ and $13\%$ respectively. These would be amazing results in a real-life scenario. However there are a few things to be noted here. First of all, the standard deviation is higher than the actual mean in all cases, meaning there is a large variance in model performance. A look at the boxplots in figure \ref{fig_returnBoxplot} confirms this.
+ The first thing to note here is that the mean values of 0.44 and 0.45 for return are extremely high. This essentially means that on average, automatic trading algorithms using the models built by the methods suggested in this paper would make a profit of $44\%$ or $45\%$ respectively. These would be amazing results in a real-life scenario. However there are a few things to be noted here. First of all, the standard deviation is higher than the actual mean in all cases, meaning there is a large variance in model performance. A look at the boxplots in figure \ref{fig_returnBoxplots} confirms this.
  
 \begin{figure}[h]
 \centering
@@ -249,6 +239,104 @@ The origin of the x-axis is set to $50\%$ accuracy, since this is essentially th
  So if the accuracy varies very little, how is it possible that the rate of return is so different for many models? Furthermore, the mean accuracy is actually only slightly above $50\%$ for PERMS and exactly $50\%$ for FBSWC. This can simply not explain an average return of $44\%$ or $45\%$? This discrepancy brings a useful thought to mind: What return would we actually expect the model to have, based on its performance recorded in the confusion matrix? \\
 
 \subsection{Expected Return and Deviation Analysis}
-If given the confusion matrix of a model and the time series of the corresponding stock value, we can easily estimate what return we would expect from the automatic investment algorithm explained in subsection \ref{subsec_investmentStrageties}. Lett $TP$ be the number of true positives, (Up correctly classified as UP), $FP$ be the number of false positives (DOWN incorrectly classified as UP), $FN$ be the number of false negatives (UP incorrectly classified as DOWN) and $TN$ be the number of true negatives (DOWN correctly classified as DOWN). Furthermore let $TS = [v_1,...v_n]$ be the time series of stock values. We define $D = [d_1,...,d_{n-1}]$, where $d_i = v_{i+1} - v_i$ as the difference vector of $TS$. Furthermore let $D^+ = [v1,...v_m]$, where $v_i \in D \land v_i > 0$ and let $D^- = [w1,...w_o]$, where $w_i \in D \land w_i < 0$.  Then we can define the average increase as \[INC  = \frac{\sum_{d \in D^+} d}{|D^+|} \] TODO: DIVIDE BY SIZE and the average decrease as \[ DEC = |\frac{\sum_{\substack{d \in D^-}} d}{|D^-|}| \]
+Given the confusion matrix of a model and the time series of the corresponding stock value, we can easily estimate what return we would expect from the automatic investment algorithm explained in subsection \ref{subsec_investmentStrageties}. Let
+\begin{itemize}
+	\item $TP$ be the number of true positives, (Up correctly classified as UP)
+	\item $FP$ be the number of false positives (DOWN incorrectly classified as UP)
+	\item $FN$ be the number of false negatives (UP incorrectly classified as DOWN)
+	\item $TN$ be the number of true negatives (DOWN correctly classified as DOWN)
+\end{itemize}
+% $TP$ be the number of true positives, (Up correctly classified as UP), $FP$ be the number of false positives (DOWN incorrectly classified as UP), $FN$ be the number of false negatives (UP incorrectly classified as DOWN) and $TN$ be the number of true negatives (DOWN correctly classified as DOWN).
+Furthermore let $TS = [v_1,...v_n]$ be the time series of stock values. We define $D = [d_1,...,d_{n-1}]$, where $d_i = \frac{v_{i+1} - v_i}{v_i}$ as the relative difference vector of $TS$. Furthermore let $D^+ = [v1,...v_m]$, where $v_i \in D \land v_i > 0$ and let $D^- = [w1,...w_o]$, where $w_i \in D \land w_i < 0$.  Then we can define the average relative increase as \[INC  = \frac{\sum_{d \in D^+} d}{|D^+|} \] and the average relative decrease as \[ DEC = |\frac{\sum_{\substack{d \in D^-}} d}{|D^-|}| \]
 With that we can define the expected return as \[ER  = TP \cdot INC + TN \cdot DEC - FP \cdot DEC - FN \cdot INC \]
+If there are no significant outliers or an especially high variance in the multisets $D^+$ and $D^-$ we would expect the return of the automated investment strategy model to behave according to the formula above. With this in mind we simply created a random guessing model for each stock, calculated the actual return as well as the expected return for each model and sorted them according to the absolute difference between these two values. The result is shown in figure \ref{fig_returnDiscrepancy}.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.75\textwidth]{returnDiscrepancy}
+	\caption{Discrepancy between expected and actual return for each model}
+	\label{fig_returnDiscrepancy}
+\end{figure}
+
+Note that the companies are now no longer ordered alphabetically, but according to the discrepancy of their predictive models. We can see that this discrepancy is quite high for some models. We have now found out that there is not only a discrepancy between the accuracy and return metric of the actual models analyzed in the previous subsection but also for a completely new type of model (the random-guessing model). This strongly suggests that there was no mistake in the model evaluation in the previous section but that instead the problem lies within the underlying data, since a completely new model shows similar discrepancies. The most likely causes for this are high variances or extreme outliers in $D$. Further investigation shows that there is indeed some correlation between the discrepancy and the variance in $D$. Figure \ref{fig_stdDiscrepancy} visualizes this.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.75\textwidth]{stdDiscrepancy}
+	\caption{Standard Deviation of the relative Difference Vector. Companies have the same order as in figure \ref{fig_returnDiscrepancy}}.
+	\label{fig_stdDiscrepancy}
+\end{figure}
+
+It can be seen that most of the models with a high discrepancy have a rather high standard deviation in the relative difference vector. There are however notable exceptions, so this is not fully conclusive. An exemplary study of the distribution of the relative difference vector for the company \textit{ACOR}, which has a rather high discrepancy but comparably low standard deviation still reveals that outliers are a probable cause for the high discrepancy. Figure \ref{fig_acorDRDistribution} plots the distribution of \textit{ACOR's} relative difference vector in a boxplot.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.75\textwidth]{acorDRDistribution}
+	\caption{Distribution of the relative difference vector for company \textit{Acor}. The Distribution contains 24175 values in total. All that can be seen in the figure are outliers according to the definition of a boxplot, since the great majority of the values are inside the box, which is only visible as a horizontal line around 0\%}.
+	\label{fig_acorDRDistribution}
+\end{figure}
+
+The boxplot shows that it is in fact not unlikely to achieve a high discrepancy between expected (based on the mean difference) and actual return. In order to reach \textit{Acor's} discrepancy of about $80\%$ it is sufficient to get the predictions for the top 4 largest values of $|D|$ wrong, since they have a value of around $20\%$ each. If the remaining predictions are evenly distributed the result will be around $80\%$ higher or lower than expected. \\
+This analysis has shown us several things. It has confirmed that many of the financial time series we used as a data basis are at times volatile, which can be a problem for model evaluation. Interestingly, when looking back at the mean results of the models in table \ref{table_firstRunReturn} it seems to be the case that the models get the extreme cases right more often than they get them wrong, since their performance in terms of return is higher than expected instead of lower. Since there were only 40 models evaluated however, this may well be due to chance. \\
+It is clear that these extreme outliers in most of the time series are something that models in a real-life scenario must absolutely consider and even be built for to recognize, since misidentifying them would lead to significant losses of money. However these outliers make it hard to asses the quality of the underlying algorithms, which is what we aim to do in this evaluation. This means that from now we will restrict ourselves to those companies that have a discrepancy below $5\%$ whenever we look at the rate of return. Models corresponding to companies above that threshold will not be considered. When looking at accuracy we will still consider all models.
+
+\subsection{Comparison with Baselines}
+TODO
+
+\subsection{Algorithm Parameter Influence}
+Recall that subsection \ref{subsec_explorativeAnalysis} introduced an initial configuration for the algorithms. We refer to this as the base configuration which is now modified. The first parameter to modify is the support for the serial episodes, which can be lowered quiet a bit to allow for a more exhaustive search for predictive patterns. Figure \ref{fig_supportBoxplots} visualizes the accuracy distribution for PERMS and FBSWC for different serial support thresholds as boxplots.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{permsSupportSerial}
+  \label{fig_permsSupportSerial}
+  \caption{PERMS}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{fbswcSupportSerial}
+  \label{fig_fbswcSupportSerial}
+  \caption{FBSWC}
+\end{subfigure}
+\caption{Accuracy distributions for both model types, grouped by support thresholds. The red dots mark the mean accuracy over all models in that group.}
+\label{fig_supportBoxplots}
+\end{figure}
+
+The boxplots show that there seems to be a surprisingly small influence of the support on the overall model performance. In theory a smaller support threshold should lead to better models, since more episodes will be mined, which increases the chance of finding good predictors. It is however entirely possible that the episodes that occur often also have the best confidence (in case of PERMS) or their derived features have the best information gain (in case of FBSWC), in which case they would be discovered in all the settings. \\
+The next parameter that was modified is the number of training windows. Once again the results are shown in several boxplots in figure \ref{fig_numWindowsBoxplots}
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{permsNumWindows}
+  \label{fig_permsSupportSerial}
+  \caption{PERMS}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{fbswcNumWindows}
+  \label{fig_fbswcSupportSerial}
+  \caption{FBSWC}
+\end{subfigure}
+\caption{Accuracy distributions for both model types, grouped by the number of training windows. The red dots mark the mean accuracy over all models in that group.}
+\label{fig_numWindowsBoxplots}
+\end{figure}
+
+Overall, the number of training windows seems to have more of an impact than the support threshold for serial episodes, however the impact on model performance is somewhat chaotic. No clear trend can be visibly seen in the boxplots. PERSM does seem to do a littel better with a medium amount of windows (150-250), but the differences are hardly significant. Interestingly the FBSWC-models with the highest number of training examples seem to contain less variance in their performance. However their overall average performance does not increase. \\
+The last parameter that was experimented with is the number of predictive episode rules, which is a parameter only for PERMS and somewhat comparable to an ensemble-size parameter. Figure \ref{fig_permsNumPredictors} plots the different accuracy distributions for different numbers of predictive episode rules used in the ensemble.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.75\textwidth]{permsNumPredictors}
+	\caption{Accuracy distributions for different ensemble sizes in PERMS. The red dots mark the mean accuracy over all models in that group.}.
+	\label{fig_permsNumPredictors}
+\end{figure}
+
+In this plot we can finally see an interesting correlation. The mean accuracy over the models increases with rising ensemble-size. This does not eliminate the possibility of failure, since all groups still include poorly performing models, but the general trend seems to go upwards with rising ensemble size. In summary the mean accuracy of the last group (number of predictors set to 1000) is $53\%$, which is an improvement over the $50,7\%$ of the first exploratory run. \\
+Apart from the number of predictive episodes for PERMS however, there seems to be no significant impact of the tested parameters in this setting. There is also no striking difference between the two learning algorithms PERMS and FBSWC. Models built by both algorithms still tend to score around $50\%$ accuracy, thus they are largely indistinguishable from random guessing. It is interesting however, that both algorithms produce outliers in both directions, which reveals that both algorithms have the potential to build better than random classifiers. The outliers in itself are interesting in that there are some companies whose time series seems to be harder or easier to predict. For example roughly half of the low-accuracy outliers are models built for the time series of company \textit{CMPR}. However the same company also appears in the top-accuracy outliers sometimes, which are overall more diverse.
+
+\subsection{Adding semantics}
 
