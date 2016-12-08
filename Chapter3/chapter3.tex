@@ -1,4 +1,4 @@
-\chapter{Background and Problem Definition}
+\chapter{Episode Mining Background}
 \label{chapter_background}
 
 % **************************** Define Graphics Path **************************
@@ -8,15 +8,10 @@
     \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}}
 \fi
 
-This chapter establishes the terminology and basic formal definitions for this thesis.
+This chapter establishes the terminology and basic formal definitions for this thesis. While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is important in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. 
 
-\section{Episode Mining Background}
-\label{sec_episodeMiningBackground}
-
-While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is important in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. 
-
-\subsection{Basic Definitions}
-\label{subsec_basicEpisodeDefinitions}
+\section{Basic Definitions}
+\label{sec_basicEpisodeDefinitions}
 Episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
 
 \begin{mydef}
@@ -163,8 +158,8 @@ An example of an episode pattern, a sequence and two occurrences is visualized i
 \end{figure}
 
 
-\subsection{Episode Discovery and general Mining Algorithm}
-\label{subsec_episodeDiscovery}
+\section{Episode Discovery and general Mining Algorithm}
+\label{sec_episodeDiscovery}
 When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. This is similar to all the different kinds of pattern mining algorithms, such as the apriori algorithm for finding frequent itemsets \cite{agrawal1994fast}. A general algorithm for mining the episodes occurring frequently in a sequence is given in algorithm \ref{alg_generalEpisodeMining}. The algorithm is very alike the basic apriori algorithms, since it uses a level-wise, breadth first search by first identifying all frequent episodes of a certain length $i$ and then uses these frequent episodes to generate candidates (possibly frequent episodes) of length $i+1$. In order for this to be correct, episode frequency must follow the apriori principle \cite{agrawal1994fast}, which formally means that if an episode is frequent, all its subepisodes must be frequent as well. Intuitively one would assume that this is always true for episodes but strictly speaking this depends on the definition of episode frequency. However, any frequency definition of episodes that does not satisfy the apriori principle would be highly questionable to say the least, since this would eliminate the possibility of an efficient candidate generation that prunes those episodes which have infrequent subepisodes. To the best of our knowledge all frequency definitions proposed in the literature satisfy the apriori principle.\newline
 
 \begin{algorithm}[H]
@@ -202,8 +197,8 @@ This leads to various frequency definitions of episodes in the literature, which
 %The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
 
 
-\subsection{Window based frequency}
-\label{subsec_windowBased}
+\section{Window based frequency}
+\label{sec_windowBased}
 To the best of our knowledge the window based frequency was the first frequency definition for episodes to gain general popularity. It was conceived by Mannila et. al. \cite{mannila1995discovering}, although the frequency counting algorithms were only mentioned in text form. The same authors  specified the algorithms in a later paper \cite{mannila1997discovery}, which acts as the primary source for the overview given in this subsection. In order to define the window based frequency we first need the notion of a time window: 
 
 \begin{mydef}
@@ -232,8 +227,8 @@ This definition can be confusing at first since it is intended that episode occu
 When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes can be looked up in the appendix \ref{app_freqCounting}.
 There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
 
-\subsection{Other frequency definitions}
-\label{subsec_otherFrequency}
+\section{Other frequency definitions}
+\label{sec_otherFrequency}
 
 In this subsection we briefly present alternative frequency definitions without specifying counting algorithms. For the exact algorithms we refer the reader to the respective papers. \newline
 Most alternative definitions tried to move away from the ideas of fixed windows and tried to improve the performance of the counting algorithms. \\
@@ -288,8 +283,8 @@ When looking at these definitions in comparison to the window based frequency de
 	\item The non-overlapping occurrence based frequency offers the fastest counting algorithm of all three definitions. However when incorporating expiry times for serial episodes it looses this advantage. Additionally previous literature has not yet identified an efficient algorithm to count non-overlapped occurrences of parallel episodes with expiry times. 
 \end{itemize}
 
-\subsection{Candidate Generation}
-\label{subsec_candidateGen}
+\section{Candidate Generation}
+\label{sec_candidateGen}
 Most previous work generates candidates for serial and parallel episodes separately, using a levelwise approach for both cases. The candidate generation procedure presented below was originally specified by Manila et. al. \cite{mannila1997discovery}. A more detailed explanation can be found in Laxman's PHD thesis \cite{laxman2006discovering}. \newline
 We first consider the case for parallel episodes. Given $F_k$ as the set of all frequent parallel episodes of length $k$ we can generate the candidate parallel episodes $C_{k+1}$ of length $k+1$ by doing the following:
 
@@ -312,8 +307,8 @@ The same procedure can be applied to serial episodes, except that
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
 Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes. For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. 
 
-\subsection{Pattern Explosion}
-The term pattern explosion is often used to refer to the common problem of pattern mining algorithms, that they find many more patterns than can be processed (either by humans or automatically). This problem is potentially worse in episode mining than it is for classical frequent itemset mining, since the potential number of patterns is higher. Surprisingly, there is a notable absence of formulas for the number of episode patterns given a certain length or alphabet size in literature. It is however useful to have such formulas in order to have a rough idea just how many patterns may exist, since this may help in choosing appropriate support values. Such a formula is difficult to find for composite episodes, however for parallel and serial episodes the combinatorial arguments are rather straightforward. Let $|\Sigma| = n$ be the size of the event alphabet. For the classical case of frequent itemset mining (with $\Sigma$ being the set of all items) the number of possible itemsets $N_I(n)$ is the size of the powerset of $\Sigma$:
+\section{Pattern Explosion}
+The term pattern explosion is often used to refer to the common problem of pattern mining algorithms, that they find many more patterns than can be processed (either by humans or automatically). This problem is potentially worse in episode mining than it is for classical frequent itemset mining, since the potential number of patterns is higher. Surprisingly, there is a notable absence of formulas for the number of episode patterns given a certain length or alphabet size in literature. It is however useful to have such formulas in order to have a rough idea just how many patterns may exist, since this may help in choosing appropriate support values. For parallel and serial episodes the combinatorial arguments are rather straightforward. Let $|\Sigma| = n$ be the size of the event alphabet. For the classical case of frequent itemset mining (with $\Sigma$ being the set of all items) the number of possible itemsets $N_I(n)$ is the size of the powerset of $\Sigma$:
 
 \begin{equation}
 	N_I(n) = 2^n
@@ -332,7 +327,15 @@ The argument is simple: For each length $i$ we draw $i$ events from an urn of si
 \end{equation}
 
 Serial episodes are formed in the same way, except that now the order matters, which means that this is equal to the problem of drawing $i$ events from an urn of size $n$ with replacement with being interested in the order, which means that there are $n^i$ combinations. Once again we sum over all lengths to obtain the complete number of patterns. \\
-In order to get an idea of how the number of parallel and serial episode patterns develops, figure \ref{fig_patternExplosion} plots the values for a few alphabet sizes.
+Such a formula is more difficult to find for composite episodes, since the different orderings and number of orderings are dificult to enumerate. In their paper about mining composite episodes Baathorn et. al. \cite{bathoorn2007finding} provide a formula for the number of composite episodes $N_C(n,m)$:
+
+\begin{equation}
+\label{eq_numComposite}
+	N_C(n,m) = \sum_{i=1}^m (2^n -1)^i
+\end{equation}
+
+However as discussed in section \ref{sec_basicEpisodeDefinitions} they define composite episodes as sequences of sets, which does not include all composite episodes according to definition \ref{def_compositeEpisodes}. This means that the number of composite episodes according to definition \ref{def_compositeEpisodes} is even higher than the one given by equation \ref{eq_numComposite}. \\
+In order to get an idea of how the number of parallel and serial episode patterns develops, figure \ref{fig_patternExplosion} plots the values for a few alphabet sizes. Since this thesis only uses parallel and serial episodes, the number composite episodes is not depicted in the graph.
 
 \begin{figure}[h]
 	\centering
