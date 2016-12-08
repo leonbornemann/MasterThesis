@@ -8,7 +8,35 @@
     \graphicspath{{Chapter4/Figs/Vector/}{Chapter4/Figs/}}
 \fi
 
-This chapter presents the suggested learning algorithms for predictive models in detail. Section \ref{sec_predictiveEpisodeMining} explains predictive episode mining, an approach that aims to discover predictive episodes in the stream. Section \ref{sec_FeatureBasedStreamWindowClassification} explains the idea of feature based stream window classification in order to predict event occurrences. 
+This chapter presents the suggested learning algorithms for predictive models in detail. First section \ref{sec_formalProblemDef} defines the problem of predicting events in a stream formally. Subsequently sections \ref{sec_predictiveEpisodeMining} and \ref{sec_FeatureBasedStreamWindowClassification} explain the two approaches suggested by this thesis, which are called predictive episode rule mining and feature based stream window classification. Finally section TODO explains how the models created by these methods can be evolved as the stream progresses.
+
+\section{Formal Problem Definition}
+\label{sec_formalProblemDef}
+The problem to be tackled in this thesis is the prediction of future events in data streams using episode patterns. The approaches shall have the following properties:
+
+\begin{itemize}
+	\item \textbf{Local and fast prediction:} We do not focus on long term trends or on predictions of special values at fixed times (for example daily closing values of stocks), but instead aim to give predictions about the near future given the current state of the stream.
+	\item \textbf{Usage of a Stream of categorical Values} Most forecasting methods focus on regression, meaning the predictions of numerical values. In contrast to this we work on streams of categorical events and we aim to predict the occurrences of events of certain types.
+\end{itemize}
+
+In this context we define:
+
+\begin{mydef}
+\textbf{Categorical Event Stream} A categorical event stream is defined as a (possibly infinite or constantly updating) sequence: $S = [ (T_1,t_1),(T_2,t_2),... ] $ where $T_i \in \Sigma$ is the event type of the i-th event and $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$.
+\end{mydef}
+
+Note that this definition is essentially the same as definiton \ref{def_eventSequence}, which defines event sequences. The only difference is that in a categorical event stream we allow new events to constantly come in, which makes the sequence possibly infinite. Given a categorical event stream it is the goal of this thesis to develop algorithms that will build predictive models:
+
+\begin{mydef}
+\label{def_predictiveModel}
+\textbf{Predictive Model} A predictive model for $M(T)$, $T \in Sigma$ is a model that if given a window $W$ (see definition \ref{def_timeWindow}) of a categorical event stream will output a binary value in the following:
+\begin{itemize}
+	\item $1$ if the model expects an event of type $T$ to occur shortly after $W$.
+	\item 0 otherwise.
+\end{itemize} 
+\end{mydef}
+
+Definition \ref{def_predictiveModel} purposefully remains vague about what \textit{"shortly after"} means mathematically, since this may depend on the underlying stream, or the users intent. Usually this will mean something like \textit{"x time units in the future"} or \textit{"at most x time units in the future"}
 
 \section{PERMS - Predictive Episode Rule Mining in Streams}
 \label{sec_predictiveEpisodeMining}
@@ -19,7 +47,7 @@ In order to fully explain the algorithm we first need to define what we mean by 
 
 \begin{mydef}
 \label{def_predictiveEpisode}
-\textbf{Predictive Episode Rule} An episode $\alpha$ is called a predictive episode rule for event $A \in \Sigma$ if $\alpha$ has the form $\beta \rightarrow A$ where $\beta$ is an episode. 
+\textbf{Predictive Episode Rule} An episode $\alpha$ is called a predictive episode rule for event $A \in \Sigma$ if $\alpha$ has the form $\beta \rightarrow A$ where $\beta$ is an episode. In this context we also refer to $\beta$ as the prefix or predictor and to $A$ as the suffix or target event of $\alpha$. 
 \end{mydef}
 
 %<<<<<<< HEAD old version? - pretty sure old version
@@ -27,7 +55,6 @@ In order to fully explain the algorithm we first need to define what we mean by 
 %The basic idea of the prediction algorithm using predictive episode rules is rather simple. If given a set $P$ of predictive episode rules, we monitor the stream and whenever we detect the prefix of an episode in $P$ we predict an occurrence of $A$. The idea is similar to the mining of sequential rules or rule-based classification (TODO: cite). In principle $A$ does not need to be a single event label but could also be a more complex structure, like an episode. In this thesis we restrict ourselves to single events as suffixes for predictive episode rules.
 %Of course there is an infinite amount of predictive episode rules for an event type, finding those predictive episode rules that are actually useful for predicting the occurrence of an event is the main task when building (training) the model. The use case here is very similar to the related work that deals with the constraint based mining of episode rules (TODO: cite), where episode rules are mined in order to discover dependencies between earthquakes. There are two main important differences that make the approach used by the authors (TODO: name them) impractical.
 %=======
-In the context of a predictive episode rule $\alpha = \beta \rightarrow A$ we also refer to $\beta$ as the prefix and to $A$ as the suffix or target event of $\alpha$. 
 The basic idea of the prediction algorithm using predictive episode rules is rather simple. If given a set $P$ of predictive episode rules, we monitor the stream and whenever we detect the prefix of an episode in $P$ we predict an occurrence of $A$. The idea is similar to the mining of sequential rules or rule-based classification \cite{ma1998integrating}.
 Of course there is an infinite amount of predictive episode rules for an event type, finding those predictive episode rules that are actually useful for predicting the occurrence of an event is the main task when building (training) the model. The use case here is very similar to the related work that deals with the constraint based mining of episode rules \cite{meger2004constraint}, where episode rules are mined in order to discover dependencies between earthquakes. There are two main important differences that make the approach used by the authors impractical:
 
@@ -78,7 +105,7 @@ Since we decided on a frequency measure it is now possible to define frequency, 
 The intention is clear and similar to the mining of classic association rules \cite{agrawal1994fast}: If a rule has a high confidence, it means that the prefix of the rule rarely occurs without its suffix $A$, meaning there is a high chance that this is a true predictor for the event $A$. Thus the goal of PERMS is to find a set of predictive episode rules $P$ that have a very high confidence and are above a certain support limit.
 
 \subsection{Choice of training data}
-Recall that in streaming applications it is impossible to analyze the whole stream as one sequence using multiple passes. Thus, when presented with a stream any prediction or forecasting algorithm first needs to take some time to study the stream and extract training data to build the model. So if given an annotated event stream, how do we determine the training data? As it was described in section \ref{sec_episodeMiningBackground} the data basis for episode mining is one very long sequence. Thus the first simple approach would be to simply record the stream as a sequence until we have reached a number of desired elements or run out of memory. The recorded sequence would then be the training sequence from which the predictive episode rules can be mined. This approach is visualized in figure \ref{fig_trainingDataNaive}.
+Recall that in streaming applications it is impossible to analyze the whole stream as one sequence using multiple passes. Thus, when presented with a stream any prediction or forecasting algorithm first needs to take some time to study the stream and extract training data to build the model. So if given a categorical event stream, how do we determine the training data? As it was described in section \ref{sec_episodeMiningBackground} the data basis for episode mining is one very long sequence. Thus the first simple approach would be to simply record the stream as a sequence until we have reached a number of desired elements or run out of memory. The recorded sequence would then be the training sequence from which the predictive episode rules can be mined. This approach is visualized in figure \ref{fig_trainingDataNaive}.
 
 \begin{figure}[h]
 	\centering
@@ -118,7 +145,7 @@ The PERMS algorithm uses the following user-defined parameters:
 	\item \textbf{$d$} - the duration of the sliding window. This also implies that all windows which the predictive episode rules will be mined from will exactly have duration $d$.
 	\item \textbf{$m$} - the number of positive windows to mine the predictive episode rules from. This means that we will mine $m$ positive and $m$ negative training examples from the stream.
 	\item \textbf{$s$} - the minimum support that predictive episode rules must have to be considered for the model (rules with support $s$ or higher are frequent).
-	\item \textbf{$n$} - the desired size of the final set of predictive episodes.
+	\item \textbf{$n$} - the desired size of the final set of predictive episodes, also referred to as the ensemble size.
 \end{itemize}
 
 The pseudocode for PERMS is given in algorithm \ref{alg_PERMS}. Recall that for formally accessing episodes we use the notation introduced in subsection \ref{subsec_basicEpisodeDefinitions}.
@@ -301,15 +328,16 @@ The application of the predictive model to the stream is very simple: If an epis
 %\end{algorithm}
 
 \subsection{Theoretical Complexity}
-It is best to analyze the runtime and space requirements of PERMS for each step individually. The first step, meaning the mining of training examples (see algorithm \ref{alg_traningExampleMining} ) requires a sliding window over the stream. One extracted stream window requires $d \cdot v$ space, where $v$ is the velocity of the stream, meaning how many events occur per time unit. In the following we will refer to the size of a window as $|W|$. Thus to store all the training examples we require $O(m \cdot |W|)$ space. The required time obviously depends on the distribution of the target event $A$ in the stream, since the stream needs to be analyzed until $m$ positive and negative training examples are found. \\
-The majority of the training time is expected to be spent in the pattern mining phase. As with all pattern mining approaches, mining frequent episodes suffers from the problem of pattern explosion, meaning if the desired minimum support is too low, the algorithm will require exponential time and space. It is therefore usual to denote the the number of candidate episodes of length $i$ for which frequencies need to be counted as $|C_i|$. Furthermore we say that $|C| = \sum_{i=1}^N |C_i|$ is the total number of candidates ($N$ being the maximum episode length that needs to be considered). As it can be seen in algorithm \ref{alg_generalEpisodeMining}, we need to count the frequency of each candidate episode once. In order to count the frequency, we need to determine whether a candidate episode occurs in a window. Thus we arrive at $O(|C_i| \cdot m \cdot |W|)$ runtime to count frequencies for $C_i$. If we assume that each episode, as well as their associated frequency counting automata takes constant space, we require $O(|C| + m \cdot |W|)$ space in total. In theory the required space for episodes rises with their length, however the assumption is still practical, because:
+\label{subsec_permsComplexity}
+It is best to analyze the runtime and space requirements of PERMS for each step individually. The first step, meaning the mining of training examples (see algorithm \ref{alg_traningExampleMining} ) requires a sliding window over the stream. Runtime obviously depends on how long we need to scan the stream until we have a sufficient number of training windows. Since this is dependent on the use-case we refer to the length of the stream that needs to be processed until we have extracted all training examples as $S_T$. Additionally we need to store all training examples. If we assume that the size of a training window is $\Theta(|W|)$ we require $\Theta(S_T + m\cdot |W|)$ time and $\Theta(m\cdot |W|)$ space. The exact size of a training window is obviously dependent on the stream's properties, such as velocity (with a high velocity, there will be more events happening in the duration of $d$ than with a low velocity). If we assume that per timestamp there can be at maximum one event of each type we can use the following upper bound for the size of a window: $|W| = O(d\cdot |\Sigma|)$ as the worst case. \\
+The majority of the training time is expected to be spent in the pattern mining phase. As with all pattern mining approaches, mining frequent episodes suffers from the problem of pattern explosion, meaning if the desired minimum support is too low, the algorithm will require exponential time and space. It is therefore usual to denote the the number of candidate episodes of length $i$ for which frequencies need to be counted as $|C_i|$. We say that $C_i$ contains all parallel and all serial episodes of size $i$. Furthermore we say that $|C| = \sum_{i=1}^N |C_i|$ is the total number of candidates ($N$ being the maximum episode length that needs to be considered). As it can be seen in algorithm \ref{alg_generalEpisodeMining}, we need to count the frequency of each candidate episode once. In order to count the frequency, we need to determine whether a candidate episode occurs in a window, which in the worst case means that we need to loop through the entire window and the entire episode (see algorithms \ref{alg_ParallelEpisodeDetection} and \ref{alg_SerialEpisodeDetection}). Thus we arrive at $\Theta(|C_i| \cdot m \cdot(|W| + i))$ runtime to count frequencies for $C_i$. This gives us an upper bound for the total runtime, which is: $O(|C| \cdot m \cdot(|W| + N))$. Similarly we get the upper bound for of $O(|C|\cdot N + m \cdot |W|)$ for required memory in total. If we make the slightly simplifying assumption that all episodes require constant space, we can simplify the runtime and memory requirements to $\Theta(|C| \cdot m \cdot |W| )$ for runtime and $\Theta(|C| + m \cdot |W|)$ for memory. Of course the required space for episodes rises with their length, however the assumption is still practical in a lot of cases, because:
 
 \begin{itemize}
 	\item Maximum Episode length typically remains very small.
-	\item Efficient storage of episodes in Trie-like data structures can greatly reduce necessary space per episode in practise. For the efficient data structure see the section about technical realization TODO.
+	\item Efficient storage of episodes in Trie-like data structures can greatly reduce necessary space per episode in practice. For the efficient data structure see the section about technical realization TODO.
 \end{itemize}
 
-After having trained the data, predicting events in the current sliding window over the stream can be done naively in $O(n \cdot W)$ time, since in worst case each episode needs to be recognized. This can be optimized to $O(n)$ by using continous automata for episode recognition as suggested by Mannila et. al. \cite{mannila1997discovery}.
+After having trained the model, predicting events in the current sliding window over the stream can be done naively in $O(n \cdot (|W|+N))$ time, since in each episode needs to be recognized and $O(n \cdot N + |W|)$ memory. The runtime can be optimized to $O(n \cdot N)$ (TODO: recheck this) by using continous automata for episode recognition as suggested by Mannila et. al. \cite{mannila1997discovery}. In practice this is pretty fast and also has the advantage that the recognition of the $n$ different episodes in the current sliding window can be parallelized if necessary.
 
 \section{FBSWC - Feature Based Stream Window Classification}
 \label{sec_FeatureBasedStreamWindowClassification}
@@ -324,14 +352,14 @@ In order to understand the approach of FBSWC, it is best to take a step back and
 
 \subsection{FBSWC Parameters and Pseudocode}
 
-If we are able to map a window $W$ into a fitting feature space, we can train a feature based classifier on our training examples, whose mining is specified in algorithm \ref{alg_traningExampleMining}. The basic idea of FBSWC is to mine frequent episodes from both the positive as well as the negative examples, and then map each window to a feature space. The mapping works in the following: If $E$ is the set of frequent episodes, each episode will be mapped to a boolean feature, that is $true$ for an example $W$ if $\alpha$ occurs in $W$ and $false$ otherwise. The algorithm for FBSWC is given in algorithm \ref{alg_FBSWC}.
+If we are able to map a window $W$ into a fitting feature space, we can train a feature based classifier on our training examples, whose mining is specified in algorithm \ref{alg_traningExampleMining}. The basic idea of FBSWC is to mine frequent episodes from both the positive as well as the negative examples, and then map each window to a feature space. The mapping works in the following: If $E$ is the set of frequent episodes, each episode will be mapped to a boolean feature, that is $true$ for an example $W$ if $\alpha$ occurs in $W$ and $false$ otherwise. It is clear, that unless the support parameter for the episode mining algorithm is very high, the resulting feature space will be too large for most feature based classifiers. Thus feature reduction approaches need to be employed before training the classifier. The algorithm for FBSWC is given in algorithm \ref{alg_FBSWC}.
 
 \begin{algorithm}[H]
   \caption{FBSWC
     \label{alg_FBSWC}}
   \begin{algorithmic}[1]
     \Statex
-    \Require Let $S=[(T_s,t_1),...]$ be a stream of events and let $d$,$m$,$s$ be the parameters as defined in the beginning of subsection TODO.
+    \Require Let $S=[(T_s,t_1),...]$ be a stream of events and let $d$,$m$,$s$ be the parameters as defined in the beginning of subsection \ref{subsec_perms}.
     \Function{FBSWC}{}
       \Let{$(PE,NE)$}{$WindowMining(S,d,m,A)$}
       \Let{$P_{PE}$}{$MineFrequentParallelEpisodes(PE,s)$} 
@@ -354,15 +382,21 @@ If we are able to map a window $W$ into a fitting feature space, we can train a 
   \end{algorithmic}
 \end{algorithm}
 
-It is clear, that unless the support parameter for the episode mining algorithm is very high, the resulting feature space will be too large for most feature based classifiers. Thus feature reduction approaches need to be employed before training the classifier. Selection techniques for features is a research are in itself, which offers both basic and elaborate methods to select the best features for classification from a large set of base features. \\
-The FBSWC algorithm basically works with any feature selection approach, as well as with any feature based classifier. The choice is left open to the user.
+Note that in practice, the feature matrix $FS$ can be created while the frequent patterns are discovered, essentially eliminating the need for the loops from lines $10-13$. The FBSWC algorithm basically works with any feature selection approach, as well as with any feature based classifier. The choice is left open to the user.
 
 \subsection{Theoretical Complexitiy}
-TODOTODOTODO
-
-asd
-\\\\
-TODO: Window -> subseqeunce?
+The time and space needed to collect the training examples is identical to the one of PERMS, since FBSWC uses the same procedure.
+Since FBSWC leaves the choices of feature selection and feature based classifier left to the user, we can not give clear runtime and memory bounds for the training step. If we assume that the feature selection algorithm takes $FS_T$ time and $FS_M$ memory and the feature based classifier takes $C_T$ time and $C_M$ memory, we can summarize the required runtime as $O(|C| \cdot m \cdot(|W| + N) + FS_T + C_T)$ and the memory as $O(|C|\cdot N + m \cdot |W| + |C|\cdot m + FS_M + C_M)$ for similar reasoning as in subsection \ref{subsec_permsComplexity}. The additional term $|C|\cdot m$ is necessary due to the feature matrix, which needs to be stored.
 
 
 \section{Evolving the models with the stream}
+\label{sec_EvolvingModels}
+
+The 2 algorithms discussed so far are static learning algorithms, that once they passed the training phase do not change their behavior. This is often inappropriate in data streams, as models need to evolve as the stream progresses. There are a few possibilities for both algorithms to evolve with the stream.
+
+\subsection{Evolving PERMS models}
+Recall that a PERMS-model is essentially defined by a set of predictive episode rules. The prefixes of these rules were found to be frequent in the windows preceding the target event and the rules of the set were chosen to be part of the set on the basis of their confidence. The first step to an evolution of the model would be to introduce a second ensemble-size parameter $\tilde{n}$ that should be much larger than $n$. Instead of just keeping $P$ (the top $n$ predictors) in memory, PERMS now additionally keeps $\tilde(P)$, which is a set of $\tilde{n}$ other episode rules. These could be the next highest in confidence after $P$, but there could also be some benefit in randomizing parts of this set from all frequent predictors in order to maintain a diverse set. The idea is that as the stream progresses, new examples will be evaluated, which means that the confidence of the rules will change over time. This means that rules in $P$ that were initially good might lose their value over time and rules that were initially in $\tilde{P}$ might become better. By keeping track of these additional rules, one can immediately swap rules from $\tilde{P}$ to $P$, should their confidence become better than that of a rule in $P$. Additionally, if there is an overall decay in confidence this can signal that a complete re-training of the model might be necessary, since all of the rules in both $P$ and $\tilde{P}$ are no longer fitting. \\
+This is of course something one wants to avoid since the training of the model can take a lot of time, depending on the support parameters. It would of course be ideal to keep track of all frequent predictors, while the stream is running. If that is possible re-training the model would become obsolete, since all frequent predictors with their confidences are known at any time. As mentioned in the previous work section about pattern mining in data streams (TODO: cross reference), there is an approximation algorithm for maintaining all frequent itemsets in a data stream. The algorithm is known as the lossy-counting algorithm (TODO: cite). In theory, the lossy-counting algorithm can be adapted to fit many kinds of patterns.  However, the problem with this algorithm is that the pruning of patterns is much weaker than in classical pattern mining, since many subfrequent patterns need to be kept in memory, because they might become frequent at some point of time. Since the problem of pattern explosion is generally worse for episodes, especially for serial episodes, as shown in (TODO: do that), lossy counting might not be applicable to episode pattern mining in a lot of cases. Trying to use lossy counting or other approximation algorithms for episodes could be a promising area for future work.
+
+\subsection{Evolving FBSWC models}
+How FBSWC models can be evolved is essentially dependent on the feature based classifier that was chosen by the user. Many classifiers have already been adapted for the streaming environment. Among these are Decision Trees, Random Forests and Neural Networks (TODO: cite). Apart from evolving those classifiers, it is more difficult to evolve FBSWC, since classifiers usually can't change the feature space once they are trained. This means a switching of episode patterns like suggested for PERMS would require retraining the classifier on new features.

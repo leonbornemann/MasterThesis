@@ -312,44 +312,33 @@ The same procedure can be applied to serial episodes, except that
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
 Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes. For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. 
 
-\section{Problem Definition}
-The problem to be tackled in this thesis is the prediction of future events in data streams using episode patterns. The approaches shall have the following properties:
+\subsection{Pattern Explosion}
+The term pattern explosion is often used to refer to the common problem of pattern mining algorithms, that they find many more patterns than can be processed (either by humans or automatically). This problem is potentially worse in episode mining than it is for classical frequent itemset mining, since the potential number of patterns is higher. Surprisingly, there is a notable absence of formulas for the number of episode patterns given a certain length or alphabet size in literature. It is however useful to have such formulas in order to have a rough idea just how many patterns may exist, since this may help in choosing appropriate support values. Such a formula is difficult to find for composite episodes, however for parallel and serial episodes the combinatorial arguments are rather straightforward. Let $|\Sigma| = n$ be the size of the event alphabet. For the classical case of frequent itemset mining (with $\Sigma$ being the set of all items) the number of possible itemsets $N_I(n)$ is the size of the powerset of $\Sigma$:
 
-\begin{itemize}
-	\item \textbf{Local and fast prediction:} We do not focus on long term trends or on predictions of special values at fixed times (for example daily closing values of stocks), but instead aim to give predictions about the near future given the current state of the stream.
-	\item \textbf{Usage of an Annotated Event Stream} Most forecasting methods (as reviewed in TODO) focus on regression, meaning the predictions of numerical values. In contrast to this we work on annotated event streams, meaning we deal with a stream of events, which have predefined types (which is necessary to discover episodes) and we aim to predict the occurrences of events of certain types.
-\end{itemize}
+\begin{equation}
+	N_I(n) = 2^n
+\end{equation}
 
-Since a lot of basic streams are numeric in nature we define:
+Since events of the same type can occur multiple times in episodes, the number of episode patterns is not only dependent on the alphabet size $n$ but also the maximal length of patterns $m$. This means that in contrast to itemsets, episodes can have a higher length than the size of the set of the event alphabet $n$. The number of parallel episodes $N_P(n,m)$ can be calculated in the following way:
 
-\begin{mydef}
-\textbf{Low Level Event Stream} A Low Level Event stream is defined as a (possibly infinite or constantly updating) sequence: $LLES = [v_1,v_2,...]$ where each $v_i$ has the form of a tuple: $t_i = (t_i,v_{i1},v_{i2},...,v_{in})$ where $t_i \in \mathbb{N}$ is the timestamp of tuple $i$ and $v_{ij}$ is the j-th value of the i-th tuple. The datatypes of the values in the tuple depend on the concrete domain or stream, so they are not further specified. Common types are numerical, categorical or string values. The Low Level Event Stream is ordered by the timestamp values, but events are allowed to occur at the same time. Formally this means: $T_i \leq T_j \implies i \leq j$. 
-\end{mydef}
+\begin{equation}
+	N_P(n,m) = \sum_{i=1}^m {{n+i-1}\choose{n-1}}
+\end{equation}
 
-We refer to the streams that we perform the suggested mining approaches on as Annotated Event Streams:
+The argument is simple: For each length $i$ we draw $i$ events from an urn of size $n$ (which is $\Sigma$) with replacement, but without being interested in the order, which leads to exactly ${n+i-1}\choose{n-1}$ possibilities. To get all patterns up to length $m$, we simply sum up the individual terms. The number of serial episodes $N_S(n,m)$ can be calculated in the following way:
 
-\begin{mydef}
-\textbf{Annotated Event Stream} An Annotated Event Stream is defined as a (possibly infinite or constantly updating) sequence: $AES = [ (T_1,t_1),(T_2,t_2),... ] $ where $T_i \in \Sigma$ is the event type of the i-th event and $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$.
-\end{mydef}
+\begin{equation}
+	N_P(n,m) = \sum_{i=1}^m n^i
+\end{equation}
 
-Note that this definition is essentially the same as definiton \ref{def_eventSequence}, which defines event sequences. The only difference is that in an Annotated Event Stream we allow for new events to constantly come in, which makes the sequence possibly infinite.
-If the original underlying data source is a low level event stream it needs to be transformed to an annotated event stream, which can be done via a transformation procedure:
+Serial episodes are formed in the same way, except that now the order matters, which means that this is equal to the problem of drawing $i$ events from an urn of size $n$ with replacement with being interested in the order, which means that there are $n^i$ combinations. Once again we sum over all lengths to obtain the complete number of patterns. \\
+In order to get an idea of how the number of parallel and serial episode patterns develops, figure \ref{fig_patternExplosion} plots the values for a few alphabet sizes.
 
-\begin{mydef}
-\textbf{Tranformation Procedure} A transformation procedure is a mapping $f$ that takes a low level event stream $LLES$ as an input and outputs an annotated event stream $AES$ as well as the corresponding event alphabet $\Sigma$.
-\end{mydef}
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.75\textwidth]{patternExplosion}
+	\caption{Number of patterns for Different Alphabet sizes. For each observation in this plot the maximal length of the episode patterns $m$ was set to the same value as the alphabet size to allow for a comparison with the number of frequent itemsets.}
+	\label{fig_patternExplosion}
+\end{figure}
 
-Note that the selection or development of the transformation procedure is extremely important for the success of the subsequent mining of the annotated event stream. If the annotated events that are generated are largely meaningless due to a suboptimal transformation it is unlikely that the mining process will discover episodes that are helpful to predict occurrences of the desired events. If the low level annotated stream is processed in an online scenario, it is necessary to also do the transformation in an online way, which imposes additional restrictions on the transformation process. It is for example not possible to decide at any point in time, that an event happened in the past, since this would disturb the order of the annotated event stream.
-
-Given an annotated event stream it is the goal of this thesis to develop algorithms that will build predictive models:
-
-\begin{mydef}
-\label{def_predictiveModel}
-\textbf{Predictive Model} A predictive model for $M(T)$, $T \in Sigma$ is a model that if given a window $W$ (see definition \ref{def_timeWindow}) of an annotated event stream will output a binary value in the following:
-\begin{itemize}
-	\item $1$ if the model expects an event of type $T$ to occur shortly after $W$.
-	\item 0 otherwise.
-\end{itemize} 
-\end{mydef}
-
-Definition \ref{def_predictiveModel} purposefully remains vague about what \textit{"shortly after"} means mathematically, since this may depend on the underlying stream, or the users intent.
+Note that the scale of the y-axis is logarithmic, which shows that the number of possible episode patterns greatly exceeds the number of possible itemsets. This is practical information when choosing support thresholds for episode pattern mining algorithms, 
