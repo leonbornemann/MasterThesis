@@ -8,18 +8,18 @@
     \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}}
 \fi
 
-This chapter establishes the terminology and basic formal definitions for this thesis. While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is important in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. 
+This chapter establishes the terminology and basic formal definitions for this thesis. While episodes were already intuitively defined and talked about in the previous chapters it is important to formally define episodes, since formal definitions are clear and unambiguous. This is helpful in order to define and explain mining objectives and techniques as well as algorithms that are used in this thesis. 
 
 \section{Basic Definitions}
 \label{sec_basicEpisodeDefinitions}
-Episodes are complex events whose basic building blocks are simple events. Note that  in order to make use of episodes we require that all simple events have a type and we have a finite, previously known event alphabet, that contains these types, which we refer to as $\Sigma$. We follow up with a formal definition:
+Episodes are complex events whose basic building blocks are simple events. Note that in order to make use of episodes it is necessary that all simple events have a type and there is a finite, previously known event alphabet, that contains these types. In this thesis the event alphabet is referred to as $\Sigma$. Formally episodes are defined in the following way:
 
 \begin{mydef}
 \label{def_episode}
 \textbf{Episode} An episode (also sometimes called episode pattern or elementary episode) $\alpha$ of length $m$ (also called m-episode) is defined as a triple: $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ where $V_\alpha = \{v_1,...,v_m\}$ is a set of nodes, ${\leq}_{\alpha}$ is a partial order over $V_\alpha$ and $g_\alpha : V_\alpha \rightarrow \Sigma$ is a mapping that maps each node of $V_\alpha$ to an event type. \cite{mannila1995discovering}
 \end{mydef}
 
-Put more simply an episode is a multiset of event types, whose elements can be, but do not have to be ordered by a relation (${\leq}_{\alpha}$). Another way of putting it is that an episode is essentially a partially ordered sequence of events. Before we look at examples there are a two special types of episodes that need to be mentioned since they have received the most attention in the available literature. These are called serial and parallel episodes:
+Put more simply an episode is a multiset of event types, whose elements can be, but do not have to be ordered by a relation (${\leq}_{\alpha}$). Another way of putting it is that an episode is essentially a partially ordered sequence of events. Before examples are studied there are a two special types of episodes that need to be mentioned since they have received the most attention in the available literature. These are called serial and parallel episodes:
 
 \begin{mydef}
 \label{def_serialEpisode}
@@ -31,7 +31,7 @@ Put more simply an episode is a multiset of event types, whose elements can be, 
 \textbf{Parallel Episode} An episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is called a parallel episode if ${\leq}_{\alpha} = \emptyset$, in other words if there is no ordering imposed on $V_\alpha$ at all. \cite{mannila1995discovering}
 \end{mydef}
 
-Essentially, serial episodes are sequences, while parallel episodes are multisets. Figure \ref{fig_exampleEpisodes} visualizes example episodes in the same way that we have visualized episodes in earlier chapters, namely as directed acyclic graphs (DAG).
+Essentially, serial episodes are sequences, while parallel episodes are multisets. Figure \ref{fig_exampleEpisodes} visualizes example episodes as directed acyclic graphs (DAG).
 
 \begin{figure}[h]
 	\centering
@@ -76,7 +76,7 @@ In fact each episode can be formally transformed to a DAG using the following si
 	\item For each pair $v,w \in V_\alpha$ where $v \, {\leq}_{\alpha} \, w $ add edge $(v,w)$ to $E$
 \end{enumerate}
 
-The original paper by Manilla et al. \cite{mannila1995discovering} also introduces the notion of composite episodes. We repeat the definition here:
+The original paper by Manilla et al. \cite{mannila1995discovering} also introduces the notion of composite episodes:
 
 \begin{mydef}
 \label{def_compositeEpisodes}
@@ -92,7 +92,7 @@ A composite episode is either:
 \end{itemize}
 
 This definition has the advantage that any elementary episode can be represented as a composite episode which is exclusively a serial or parallel composition of serial, parallel or composite subepisodes (see definition \ref{def_subEpisode}). Note that composite episodes are not more expressive than elementary episodes as defined in definition \ref{def_episode}, it is just a recursive way of defining episodes. \\
-Interestingly, there are other parts of the related work that use the term \textit{composite episodes} but deviate from definition \ref{def_compositeEpisodes}. For example Baathorn et. al. propose a method for finding composite episodes \cite{bathoorn2007finding}. However they define composite episodes as a sequence of parallel episodes, which is more restrictive than the original definition. Also Baumgarten et. al. use this definition \cite{baumgarten2003tree} when they present an approach to mine descriptive composite episodes. Note that not all elementary episodes can be represented as sequences of parallel episode. A simple example shown in figure \ref{fig_notSequenceOfSet} illustrates this.
+Interestingly, there are other parts of the related work that use the term \textit{composite episodes} but deviate from definition \ref{def_compositeEpisodes}. For example Baathorn et al. propose a method for finding composite episodes \cite{bathoorn2007finding}. However they define composite episodes as a sequence of parallel episodes, which is more restrictive than the original definition. Also Baumgarten et al. use this definition \cite{baumgarten2003tree} when they present an approach to mine descriptive composite episodes. Note that not all elementary episodes can be represented as sequences of parallel episode. A simple example shown in figure \ref{fig_notSequenceOfSet} illustrates this.
 
 \begin{figure}[h]
 	\centering
@@ -101,14 +101,14 @@ Interestingly, there are other parts of the related work that use the term \text
 	\label{fig_notSequenceOfSet}
 \end{figure}
 
-If the presented episode were to be represented as a sequence of parallel episodes obviously $A$ and $B$ would have to be in different parallel episodes in order to fulfill the requirement that $B$ must be after $C$. After that the problem is that it is impossible to assign $C$ to any of those sets. If it gets assigned to the same parallel episode set as $A$ then this would prohibit $A$ and $B$ occurring first followed by $C$, which is allowed in the original definition. Likewise if $C$ gets assigned to the same parallel episode as $B$ then that eliminates the possibility of $C$ occurring before $A$ and $B$, which once again was allowed in the elementary episode. It should also be noted that some authors simply refer to serial episodes as episodes, which leads to somewhat of a blurry terminology across the research area. For this thesis we stick to the original terminology as defined in definitions to \ref{def_episode} to \ref{def_compositeEpisodes}. \newline
-If we want to quickly denote simple episodes formally without drawing a DAG, we will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes we use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If we want to discuss more complex episodes we will visualize them graphically like in the previous figures. \newline 
-In algorithms we use the following notation to access episodes:
+If the presented episode were to be represented as a sequence of parallel episodes obviously $A$ and $B$ would have to be in different parallel episodes in order to fulfill the requirement that $B$ must be after $C$. After that the problem is that it is impossible to assign $C$ to any of those sets. If it gets assigned to the same parallel episode set as $A$ then this would prohibit $A$ and $B$ occurring first followed by $C$, which is allowed in the original definition. Likewise if $C$ gets assigned to the same parallel episode as $B$ then that eliminates the possibility of $C$ occurring before $A$ and $B$, which once again was allowed in the elementary episode. It should also be noted that some authors simply refer to serial episodes as episodes, which leads to somewhat of a blurry terminology across the research area. For this thesis I stick to the original terminology as defined in definitions to \ref{def_episode} to \ref{def_compositeEpisodes}. \newline
+If I want to quickly denote simple episodes formally without drawing a DAG, I will use $\rightarrow$ as the sequence (ordering) operator. To show that there is no order specified between two nodes I use $\|$ as the parallel operator. For example $(A \, \| \, B ) \rightarrow C$ denotes a composite episode of length 3, which specifies that it does not matter in which order $A$ or $B$ occur, but $C$ must occur after both $A$ and $B$. If more complex episodes need to be discussed they will be visualized as directed acyclic graphs like in the previous figures. \newline 
+In algorithms the following notation is used to access episodes:
 
 \begin{itemize}
-	\item for all episodes $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ we define $|\alpha | = |V_\alpha|$ as the length of the episode.
-	\item for serial episodes we define $\alpha [i]$ as the event type of the i-th node of $\alpha$ with respect to the total ordering imposed on $\alpha$ by ${\leq}_{\alpha}$. In other words $\alpha [i]$ is the i-th element of the sequence of event types, defined by the serial episode $\alpha$.
-	\item for parallel episodes $\alpha$ we say that $E \in \alpha$ if there is at least one $v \in V_\alpha$, so that $g_\alpha(v) = E$. In this context we define $count(\alpha,E)= \{v \in V_\alpha \mid g_alpha(v) = E\}$, meaning $count(\alpha,E)$ is the number of nodes in the parallel episode $\alpha$ that have type $E$.
+	\item for all episodes $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ the term $|\alpha | = |V_\alpha|$ is used to denote the length of the episode.
+	\item for serial episodes $\alpha [i]$ refers to the event type of the i-th node of $\alpha$ with respect to the total ordering imposed on $\alpha$ by ${\leq}_{\alpha}$. In other words $\alpha [i]$ is the i-th element of the sequence of event types, defined by the serial episode $\alpha$.
+	\item for parallel episodes $\alpha$ the condition $E \in \alpha$ holds if there is at least one $v \in V_\alpha$, so that $g_\alpha(v) = E$. In this context let $count(\alpha,E)= |\{v \in V_\alpha \mid g_\alpha(v) = E\}|$, meaning $count(\alpha,E)$ is the number of nodes in the parallel episode $\alpha$ that have type $E$.
 \end{itemize}
 
 The notion of sub- and superpatterns, which is very important for most pattern mining applications also applies to episodes, as shown in the next definition.
@@ -124,26 +124,26 @@ The notion of sub- and superpatterns, which is very important for most pattern m
 	\item The ordering in $\alpha$ is at least as strict as the ordering in $\beta$:\\
 	$\forall v,w \in V_\beta \, , v \, {\leq}_{\beta} \, w \; : \; v \, {\leq}_{\alpha} \, w$
 \end{enumerate}
-In this context we also refer to $\alpha$ as the superepisode of $\beta$. \cite{mannila1995discovering,laxman2007fast}.
+In this context $\alpha$ is also called the superepisode of $\beta$. \cite{mannila1995discovering,laxman2007fast}.
 \end{mydef}
 
-It is important to note that in the original definition of sub- and superepisodes by Mannila et. al. \cite{mannila1995discovering}, the first property of the above definition was actually defined as $V_\beta \subset V_\alpha$, which implies that subepisodes would always have to consist of at least one less node than their superepisodes. This definition was changed by Laxman et. al. \cite{laxman2007fast} to allow set equality as well. The implications of this change are that parallel episodes like $A \| B$ are now subepisodes of their serial counterparts of the same length $A \rightarrow B$. In this thesis we stick to the definition that allows set equality between super- and subepisodes. In both cases however subepisodes may relax the ordering specified in their superepisodes. For example if given the serial episode $\alpha =( A \rightarrow B \rightarrow C )$, not only $A \rightarrow B$ is a subepisode of $\alpha$ but also $A \| B$. \\
-So far we have introduced a lot about episode patterns but we have not yet mentioned how episodes patterns occur in data. It is helpful to think of the episode patterns we have defined above as templates for concrete occurrences. In order to define what we mean by an episode occurrence, we first need to formally introduce the notion of an event sequence.
+It is important to note that in the original definition of sub- and superepisodes by Mannila et al. \cite{mannila1995discovering}, the first property of the above definition was actually defined as $V_\beta \subset V_\alpha$, which implies that subepisodes would always have to consist of at least one less node than their superepisodes. This definition was changed by Laxman et al. \cite{laxman2007fast} to allow set equality as well. The implications of this change are that parallel episodes like $A \| B$ are now subepisodes of their serial counterparts of the same length $A \rightarrow B$. In this thesis I stick to the definition that allows set equality between super- and subepisodes. In both cases however subepisodes may relax the ordering specified in their superepisodes. For example if given the serial episode $\alpha =( A \rightarrow B \rightarrow C )$, not only $A \rightarrow B$ is a subepisode of $\alpha$ but also $A \| B$. \\
+So far I have introduced a lot about episode patterns but it is not yet clear how episodes patterns occur in data. It is helpful to think of the episode patterns defined above as templates for concrete occurrences. In order to define what is meant by an episode occurrence, it is necessary to formally introduce the notion of an event sequence.
 
 \begin{mydef}
 \label{def_eventSequence}
-\textbf{Event sequence} An event sequence is defined as an ordered list of tuples $S = [ (T_1,t_1),..., (T_n,t_n) ] $ where $T_i \in \Sigma$ is the event type of the i-th event and $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in {1,...,n} \; i<j \implies t_i \leq t_j$. \cite{mannila1997discovery} %TODO: talk about time equality
+\textbf{Event sequence} An event sequence is defined as an ordered list of tuples $S = [ (T_1,t_1),..., (T_n,t_n) ] $ where $T_i \in \Sigma$ is the event type of the i-th event and $t_i \in \mathbb{N}^+$ is the timestamp of the i-th event. The sequence is ordered according to the timestamps, which means that $\forall i,j \in \{1,...,n\} \; i<j \implies t_i \leq t_j$. \cite{mannila1997discovery} 
 \end{mydef}
 
-Note that it is allowed for two or more consecutive elements in a sequence to have the same timestamp. This is necessary in order to allow for multiple events to occur at the same time. The ordering of events with the same timestamp is not further specified and irrelevant in most cases. Another way to define such sequences is to define them as sequences of event sets in which consecutive event sets must all have different timestamps and events that occur simultaneously are part of the same set \cite{bathoorn2007finding}. Definitions from other authors explicitly prohibit two events happening at the same time \cite{baumgarten2003tree}. Which definition is appropriate depends on the context, for this thesis we will stick with definition \ref{def_eventSequence}. \\
-Given the notion of an event sequence we can now define episode occurrences:
+Note that it is allowed for two or more consecutive elements in a sequence to have the same timestamp. This is necessary in order to allow for multiple events to occur at the same time. The ordering of events with the same timestamp is not further specified and irrelevant in most cases. Another way to define such sequences is to define them as sequences of event sets in which consecutive event sets must all have different timestamps and events that occur simultaneously are part of the same set \cite{bathoorn2007finding}. Definitions from other authors explicitly prohibit two events happening at the same time \cite{baumgarten2003tree}. Which definition is appropriate depends on the context, for this thesis I will stick with definition \ref{def_eventSequence}. \\
+Given the notion of an event sequence episode occurrences can now be defined:
 
 \begin{mydef}
 \label{def_episodeOccurrence}
-\textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if we are given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ we can define an occurrence of $\alpha$ as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V\alpha : v \;{\leq}_{E}\; w \implies t_{h(v)} \le t_{h(w)}$ holds. \cite{mannila1995discovering}
+\textbf{Episode Occurrence} An event episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ is said to occur in a sequence $S$ if events of the types that the nodes in $V_\alpha$ are mapped to by $g_\alpha$, occur in $S$ in the same order that they occur in the episode. More formally if given a sequence of events $S=[(T_1,t_1),...,(T_n,t_n)]$ an occurrence of $\alpha$ is defined as an injective Map $h:V_\alpha \rightarrow \{1,...,n\}$, where $g_\alpha (v) = T_{h(v)}$ and $\forall \, v,w \in V_\alpha : v \;{\leq}_{\alpha}\; w \implies t_{h(v)} \le t_{h(w)}$ holds. \cite{mannila1995discovering}
 \end{mydef}
 
-An episode pattern in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence we can define the duration of that occurrence. Durations of episode occurrences become relevant in practical applications, when we want to forbid episode occurrences that range over a time period that is too large. 
+An episode pattern in itself does not specify any time span in which the events of the episode must occur, however if given an episode occurrence the duration of that occurrence can be defined. Durations of episode occurrences become relevant in practical applications, when the user wants to forbid episode occurrences that range over a time period that is too large. 
 
 \begin{mydef}
 \label{def_episodeOccurrence}
@@ -160,9 +160,9 @@ An example of an episode pattern, a sequence and two occurrences is visualized i
 \end{figure}
 
 
-\section{Episode Discovery and general Mining Algorithm}
+\section{Episode Discovery and General Mining Algorithm}
 \label{sec_episodeDiscovery}
-When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. This is similar to all the different kinds of pattern mining algorithms, such as the apriori algorithm for finding frequent itemsets \cite{agrawal1994fast}. A general algorithm for mining the episodes occurring frequently in a sequence is given in algorithm \ref{alg_generalEpisodeMining}. The algorithm is very alike the basic apriori algorithms, since it uses a level-wise, breadth first search by first identifying all frequent episodes of a certain length $i$ and then uses these frequent episodes to generate candidates (possibly frequent episodes) of length $i+1$. In order for this to be correct, episode frequency must follow the apriori principle \cite{agrawal1994fast}, which formally means that if an episode is frequent, all its subepisodes must be frequent as well. Intuitively one would assume that this is always true for episodes but strictly speaking this depends on the definition of episode frequency. However, any frequency definition of episodes that does not satisfy the apriori principle would be highly questionable to say the least, since this would eliminate the possibility of an efficient candidate generation that prunes those episodes which have infrequent subepisodes. To the best of our knowledge all frequency definitions proposed in the literature satisfy the apriori principle.\newline
+When discovering episodes in a sequence one is usually interested in those episodes that occur frequently, meaning more often than a user defined threshold. This is similar to the classical pattern mining algorithms, such as the apriori algorithm for finding frequent itemsets \cite{agrawal1994fast}. The apriori algorithm utilizes a principle that has become known as the apriori principle. The apriori-principle states that if a pattern is frequent, then all of its sub-patterns must be frequent as well. With the help of this knowledge the search space of all potential patterns can be pruned, since only those patterns, whose sub-patterns are all frequent, need to be considered. A general algorithm for mining the episodes occurring frequently in a sequence is given in algorithm \ref{alg_generalEpisodeMining}. The algorithm is very alike the basic apriori algorithm, since it uses a level-wise, breadth first search by first identifying all frequent episodes of a certain length $i$ and then uses these frequent episodes to generate candidates (possibly frequent episodes) of length $i+1$. In order for this to be correct, episode frequency must of course fulfill the apriori principle \cite{agrawal1994fast}. Intuitively one would assume that this is always true for episodes but strictly speaking this depends on the definition of episode frequency. However, any frequency definition of episodes that does not satisfy the apriori principle would be highly questionable to say the least, since this would eliminate the possibility of an efficient candidate generation that prunes those episodes which have infrequent subepisodes. To the best of the author's knowledge all frequency definitions proposed in the literature satisfy the apriori principle.\newline
 
 \begin{algorithm}[H]
   \caption{General mining algorithm for frequent episodes
@@ -194,18 +194,17 @@ In summary, the general mining algorithm for frequent episodes requires:
 	\item An algorithm to generate candidate episodes
 \end{itemize}
 
-It may be a bit confusing that we need a definition of episode frequency for such a mining algorithm. Since we have already defined what an occurrence of an episode looks like it would seem that counting all occurrences of an episode would yield its frequency. While this is a possible definition of frequency, it is important to note that finding all occurrences of an episode within a sequence is neither practical nor useful. An example will demonstrate the problem with this. Consider the simple serial episode $A \rightarrow B$ and a sequence of length $2\cdot n$ which repeats the subsequence $(A,B)$ $n$ times. One quickly realizes that the number of episode occurrences is very large due to the possibility of overlapping episode occurrences. In this particular case there are already $ \frac{n \cdot (n+1)}{2}$ possible occurrences. This number swiftly increases with the length of the episode pattern, since it introduces more potential overlappings. Naturally the number of possible parallel and composite episode occurrences is even larger, since they are less restrictive in the order of the events. Additionally, such a frequency definition would violate the apriori principle, since subepisodes can have less occurrences than their superepisodes. Consider the example sequence $[A,B,C,A,B,C]$ (timestamp values are left out). In this sequence there are three distinct occurences for the episode $A \rightarrow B$ and four distinct occurrences for its superepisode $A \rightarrow B \rightarrow C$. These detrimental effects of this naive frequency definition are nicely summarized by Laxman et. al. in a paper presenting the non-overlapped frequency definition \cite{laxman2007fast}. \newline
-An extensive summary of all proposed frequency measures for episodes can be found in a paper by Achar et. al. \cite{achar2012unified}. The most common frequency definitions for episodes will be dealt with in subsections \ref{subsec_windowBased} and \ref{subsec_otherFrequency}. Each frequency definition comes with its own frequency counting algorithm. The procedure for generating candidates is independent of the frequency definition and is presented in \ref{subsec_candidateGen}. \newline
-%The first two definitions, which we will refer to as window based frequency and minimal occurance based frequency, are mentioned by Zimmermann, when he presents his method for synthetic episode generation \cite{zimmermann2012generating}, but were originally conceived in (TODO: include original sources). We refer to the third definition as the non-overlapping occurrence based Frequency which was suggested by Laxman et al. \cite{laxman2007fast}.
+It may be a bit confusing that a definition of episode frequency for such a mining algorithm is needed. Since it was already defined what an occurrence of an episode looks like it would seem that counting all occurrences of an episode would yield its frequency. While this is a possible definition of frequency, it is important to note that finding all occurrences of an episode within a sequence is neither practical nor useful. An example will demonstrate the problem with this. Consider the simple serial episode $A \rightarrow B$ and a sequence of length $2\cdot n$ which repeats the subsequence $(A,B)$ $n$ times. One quickly realizes that the number of episode occurrences is very large due to the possibility of overlapping episode occurrences. In this particular case there are already $ \frac{n \cdot (n+1)}{2}$ possible occurrences. This number swiftly increases with the length of the episode pattern, since it introduces more potential overlappings. Naturally the number of possible parallel and composite episode occurrences is even larger, since they are less restrictive in the order of the events. Additionally, such a frequency definition would violate the apriori principle, since subepisodes can have less occurrences than their superepisodes. Consider the example sequence $[A,B,C,A,B,C]$ (timestamp values are left out). In this sequence there are three distinct occurences for the episode $A \rightarrow B$ and four distinct occurrences for its superepisode $A \rightarrow B \rightarrow C$. These detrimental effects of this naive frequency definition are nicely summarized by Laxman et al. in a paper presenting the non-overlapped frequency definition \cite{laxman2007fast}. \newline
+An extensive summary of all proposed frequency measures for episodes can be found in a paper by Achar et al. \cite{achar2012unified}. The most common frequency definitions for episodes will be dealt with in sections \ref{sec_windowBased} and \ref{sec_otherFrequency}. Each frequency definition comes with its own counting algorithm that determines the frequency of candidate episodes in a sequence. The procedure for generating candidates is independent of the frequency definition and is presented in section \ref{sec_candidateGen}. \newline
 
 
-\section{Window based frequency}
+\section{Window Based Frequency}
 \label{sec_windowBased}
-To the best of our knowledge the window based frequency was the first frequency definition for episodes to gain general popularity. It was conceived by Mannila et. al. \cite{mannila1995discovering}, although the frequency counting algorithms were only mentioned in text form. The same authors  specified the algorithms in a later paper \cite{mannila1997discovery}, which acts as the primary source for the overview given in this subsection. In order to define the window based frequency we first need the notion of a time window: 
+The window based frequency was the first frequency definition for episodes to gain general popularity. It was conceived by Mannila et al. \cite{mannila1995discovering}, although the frequency counting algorithms were only mentioned in text form. The same authors  specified the algorithms in a later paper \cite{mannila1997discovery}, which acts as the primary source for the overview given in this subsection. In order to define the window based frequency the notion of a time window needs to be introduced: 
 
 \begin{mydef}
 \label{def_timeWindow}
-\textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the annotated event stream $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the duration of Window $W$. We denote the size of the window, meaning the number of events in it as $|W|$.
+\textbf{Time Window} Given a sequence of events $S$ we define the Time Window $W(S,q,r)$ with $q,r \in \mathbb{N}^+$ and $q < r$ as the ordered subsequence of $S$ that includes all events of the sequence $S$ that have a timestamp $t$ where $q \leq t\leq r$. We call $w = r-q+1$ the duration of Window $W$. We denote the size of the window, meaning the number of events in it as $|W|$.
 \end{mydef}
 
 An example of how windows of a fixed duration are located in a sequence of events is presented in figure \ref{fig_windowBasedFrequency}.
@@ -220,37 +219,34 @@ An example of how windows of a fixed duration are located in a sequence of event
 
 \begin{mydef}
 \label{def_windowBasedFrequency}
-\textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window duration of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with duration $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$. %TODO: incorporate sequence bounds and number of windows
+\textbf{Episode Frequency - Window based Definition} Given a sequence of events $S$, a fixed window duration of $w$ and an episode $\alpha$, we define the window based frequency $w\_freq(\alpha )$ as the number of windows $W$ with duration $w$ of $S$ in which $\alpha$ occurs: $w\_freq(\alpha ) = |\,\{W(S,q,r) \mid r-q+1 = w \land \alpha \;occurs\; in\; W \}\,|$.
 \end{mydef}
 
 
 For example given the sequence visualized in figure \ref{fig_windowBasedFrequency} $A \rightarrow B \rightarrow C$ occurs in windows $W(S,1,5)$ and $W(S,3,7)$. \newline 
-This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. In the previously mentioned example, we can find the episode $C \rightarrow D$ in the consecutive windows $W(S,1,5)$, $W(S,2,6)$ and $W(S,3,7)$, which means we will get a frequency of $3$ just for the two events $(3,C)$ and $(4,D)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
-When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes can be looked up in the appendix \ref{app_freqCounting}.
-There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et. al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
+This definition can be confusing at first since it is intended that episode occurrences that are comprised of the exact same events count just as many times as there are windows in which the events appear. In the previously mentioned example, we can find the episode $C \rightarrow D$ in the consecutive windows $W(S,1,5)$, $W(S,2,6)$ and $W(S,3,7)$, which means we will get a frequency of $3$ just for the two events $(C,3)$ and $(D,4)$. This effect obviously increases with the window size. Note that for each episode $\alpha$ we only count one occurrence per window $W$, no matter how many occurrences of $\alpha$ there are in $W$.\newline
+When determining the window based frequency the naive approach would be to check each window of the sequence separately. Since the windows are adjacent there is a better approach, which makes it possible to only iterate over the sequence once and determine the window based frequency for each candidate episode. Most papers focus purely on parallel and serial episodes and do not give an algorithm for composite episodes. The algorithms to determine the window based frequency of serial and parallel episodes in a sequence are quite complex, since they use sliding windows and continuously restarting automata. It is not necessary to study them in detail for this thesis, as simplified versions of them are sufficient. These will be introduced in chapter \ref{chapter_solutions}. If the original algorithms are of interest to the reader they can be looked up in the paper by Manilla et al. \cite{mannila1997discovery}.
+There is a notable absence of frequency counting algorithms for elementary (composite) episodes in literature. Mannila et al. claim that each composite episode can be broken down into partial episodes, which are serial and/or parallel \cite{mannila1997discovery}. However they neither specify an algorithm for breaking down composite episodes into purely serial and parallel parts, nor do they specify a frequency counting algorithm for composite episodes. Subsequent research, such as alternate frequency definitions and counting algorithms has also mainly focused on parallel and serial episodes. If composite episodes have been studied they were usually studied in the above mentioned, more restrictive form of sequences of parallel episodes. \newline
 
-\section{Other frequency definitions}
+\section{More Frequency Definitions}
 \label{sec_otherFrequency}
 
-In this subsection we briefly present alternative frequency definitions without specifying counting algorithms. For the exact algorithms we refer the reader to the respective papers. \newline
-Most alternative definitions tried to move away from the ideas of fixed windows and tried to improve the performance of the counting algorithms. \\
-\\
-\textbf{Minimal Occurrence Based Frequency Definition} \newline
-The first alternate definition does uses the concept of minimal occurrences:
+In this subsection we briefly present alternative frequency definitions once again without presenting the counting algorithms. For the exact algorithms I refer the reader to the respective papers. \newline
+Most alternative definitions tried to move away from the ideas of fixed windows and tried to improve the performance of the counting algorithms. The first alternate definition uses the concept of minimal occurrences:
 
 \begin{mydef}
-\textbf{Minimal Occurrence} An event episode $\alpha$ is said to occur minimally in a window $W(S,q,r)$ if $\alpha$ occurs in $W$ and there is no subwindow of $W$ in which $\alpha$ also occurs. %(TODO: define subwindow)
+\textbf{Minimal Occurrence} An event episode $\alpha$ is said to occur minimally in a window $W(S,q,r)$ if $\alpha$ occurs in $W$ and there is no subwindow of $W$ in which $\alpha$ also occurs. Note that $\tilde{W}(S,\tilde{q},\tilde{r})$ is a subwindow of $W(S,q,r)$ if $\tilde{q} \geq q \land \tilde{r} < r $ or $\tilde{q} > q \land \tilde{r} \leq r $.
 \end{mydef}
 
 \begin{mydef}
 \label{def_minimalOccuranceFrequency}
-\textbf{Episode Frequency - Minimal Occurrence based Definition} Given a sequence of events $S$ and an Episode $\alpha$, we define the minimal occurrence based frequency $mo\_freq(\alpha )$ as the number of minimal occurrences of $\alpha$ in $S$. TODO: find and cite the original source
+\textbf{Episode Frequency - Minimal Occurrence based Definition} Given a sequence of events $S$ and an Episode $\alpha$, we define the minimal occurrence based frequency $mo\_freq(\alpha )$ as the number of minimal occurrences of $\alpha$ in $S$. \cite{laxman2006discovering}
 \end{mydef}
 
 The second alternative definition introduces the concept of non-overlapping occurrences:
 
 \begin{mydef}
-\textbf{Non-Overlapping Occurrences} Given a m-Episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ where $V_\alpha = \{v_1,...,v_m\}$, two occurrences if all timestamps of one of the occurrences are bigger than all the timestamps of the other occurrence. Formally two occurrences $h_1$ and $h_2$ of $\alpha$ are non-overlapped if either:
+\textbf{Non-Overlapping Occurrences} Given an episode $\alpha = (V_\alpha,{\leq}_{\alpha},g_\alpha)$ where $V_\alpha = \{v_1,...,v_m\}$, two occurrences are non-overlapped if all timestamps of one of the occurrences are bigger than all the timestamps of the other occurrence. Formally two occurrences $h_1$ and $h_2$ of $\alpha$ are non-overlapped if either:
 \begin{itemize}
 	\item $\forall \, v_j \in V_\alpha : h_2(v_1)>h_1(v_j)$ or 
 	\item $\forall \, v_j \in V_\alpha : h_1(v_1)>h_2(v_j)$
@@ -268,8 +264,6 @@ An example scenario visualizing overlapping and non-overlapping occurrences is v
 	\label{fig_nonOverlappingExample}
 \end{figure}
 
-This leads to the Definition:
-
 \begin{mydef}
 \label{def_nonOverlappingFrequency}
 \textbf{Episode Frequency - Non-Overlapping Occurrences based Definition} Given a seqeunce of events $S$ and an Episode $\alpha$, we define the non-overlapping occurrence based frequency $noo\_freq(\alpha )$ as cardinality of the largest set of non-overlapped occurrences of $\alpha$ in $S$ \cite{laxman2007fast}.
@@ -279,15 +273,15 @@ This leads to the Definition:
 When looking at these definitions in comparison to the window based frequency definition it is not clear whether any of these is always superior to or more useful than the other since they have different properties. We mention them briefly:
 
 \begin{itemize}
-	\item As already mentioned the window based frequency counts an episode occurrence that is comprised of the same events in multiple windows. This might especially distort the count if the window duration is high and the events in the episode happen with minimal delay between them.
-	\item The minimal occurrence based definition of frequency does not suffer from the problem of the previous point
+	\item The window based frequency counts an episode occurrence that is comprised of the same events in multiple windows. This might especially distort the count if the window duration is high and the events in the episode happen with minimal delay between them.
+	\item The minimal occurrence based definition of frequency does not suffer from the problem of the previous point, as it only counts the windows that contain a candidate episode, that can not be reduced in duration.
 	\item The window based definition has the advantage that it already incorporates a fixed duration during which episodes may occur, meaning there can not be episodes that stretch over a time period larger than the fixed window duration $w$. This might be beneficial for potential algorithms, since it reduces the search space for episodes. On top of that it is also closer to reality, since in many domains episodes happen within a small time window.
-	\item The non-overlapping occurrence based frequency offers the fastest counting algorithm of all three definitions. However when incorporating expiry times for serial episodes it looses this advantage. Additionally previous literature has not yet identified an efficient algorithm to count non-overlapped occurrences of parallel episodes with expiry times. 
+	\item The non-overlapping occurrence based frequency seems to offer the fastest counting algorithm of all three definitions \cite{laxman2007fast}. However when incorporating expiry times for serial episodes some of this advantage gets lost \cite{laxman2006discovering}. Additionally previous literature has not yet identified an efficient algorithm to count non-overlapped occurrences of parallel episodes with expiry times. 
 \end{itemize}
 
 \section{Candidate Generation}
 \label{sec_candidateGen}
-Most previous work generates candidates for serial and parallel episodes separately, using a levelwise approach for both cases. The candidate generation procedure presented below was originally specified by Manila et. al. \cite{mannila1997discovery}. A more detailed explanation can be found in Laxman's PHD thesis \cite{laxman2006discovering}. \newline
+Most previous work generates candidates for serial and parallel episodes separately, using a levelwise approach for both cases. The candidate generation procedure presented below was originally specified by Manila et al. \cite{mannila1997discovery}. A more detailed explanation can be found in Laxman's PHD thesis \cite{laxman2006discovering}. \newline
 We first consider the case for parallel episodes. Given $F_k$ as the set of all frequent parallel episodes of length $k$ we can generate the candidate parallel episodes $C_{k+1}$ of length $k+1$ by doing the following:
 
 \begin{enumerate}
@@ -295,7 +289,7 @@ We first consider the case for parallel episodes. Given $F_k$ as the set of all 
 	\item For each unordered pair $(\alpha , \beta )$, $\alpha ,\beta \in F_k$ where $\alpha$ and $\beta$ share the same first $k-1$ nodes, generate candidate $\gamma$ by copying $\alpha$ and appending $\beta [k]$.
 \end{enumerate}
 
-For example the two frequent parallel episodes $A \| A \| B$ and $A \| A \| C$ will generate the candidate $A \| A \| C \| D$. \newline
+For example the two frequent parallel episodes $A \| A \| B$ and $A \| A \| C$ will generate the candidate $A \| A \| B \| C$. \newline
 The same procedure can be applied to serial episodes, except that
 \begin{itemize}
 	\item we do not order lexicographically, instead the serial episodes remain in the array in their natural order
@@ -307,17 +301,17 @@ The same procedure can be applied to serial episodes, except that
 \end{itemize}
 
 Thus the two frequent serial episodes $A \rightarrow A \rightarrow B$ and $A \rightarrow A \rightarrow C$ will now generate the two candidates $A \rightarrow A \rightarrow B \rightarrow C$ and $A \rightarrow A \rightarrow C \rightarrow B$. \newline
-Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes. For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et. al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. 
+Since the mining of composite episodes has not received much attention, it is unsurprising that there little related work that mentions candidate generation strategies for these general types of episodes. For a more strict definition of composite episodes which only includes sequences of parallel episodes, Baumgarten et al. use a tree growth strategy to generate candidates for composite episodes \cite{baumgarten2003tree}. 
 
 \section{Pattern Explosion}
 \label{sec_PatternExplosion}
-The term pattern explosion is often used to refer to the common problem of pattern mining algorithms, that they find many more patterns than can be processed (either by humans or automatically). This problem is potentially worse in episode mining than it is for classical frequent itemset mining, since the potential number of patterns is higher. Surprisingly, there is a notable absence of formulas for the number of episode patterns given a certain length or alphabet size in literature. It is however useful to have such formulas in order to have a rough idea just how many patterns may exist, since this may help in choosing appropriate support values. For parallel and serial episodes the combinatorial arguments are rather straightforward. Let $|\Sigma| = n$ be the size of the event alphabet. For the classical case of frequent itemset mining (with $\Sigma$ being the set of all items) the number of possible itemsets $N_I(n)$ is the size of the powerset of $\Sigma$:
+The term pattern explosion is often used to refer to the common problem of pattern mining algorithms of discovering many more patterns than can be processed (either by humans or automatically). This problem is potentially worse in episode mining than it is for classical frequent itemset mining, since the potential number of patterns is higher. Surprisingly, there is a notable absence of formulas for the number of episode patterns given a certain length or alphabet size in literature. It is however useful to have such formulas in order to have a rough idea just how many patterns may exist, since this may help in choosing appropriate support values. For parallel and serial episodes the combinatorial arguments are rather straightforward. Let $|\Sigma| = n$ be the size of the event alphabet. For the classical case of frequent itemset mining (with $\Sigma$ being the set of all items) the number of possible itemsets $N_I(n)$ is the size of the powerset of $\Sigma$:
 
 \begin{equation}
 	N_I(n) = 2^n
 \end{equation}
 
-Since events of the same type can occur multiple times in episodes, the number of episode patterns is not only dependent on the alphabet size $n$ but also the maximal length of patterns $m$. This means that in contrast to itemsets, episodes can have a higher length than the size of the set of the event alphabet $n$. The number of parallel episodes $N_P(n,m)$ can be calculated in the following way:
+Since events of the same type can occur multiple times in episodes, the number of episode patterns is not only dependent on the alphabet size $n$ but also the maximal length of patterns $m$. This means that in contrast to itemsets, episodes can have a higher length than the cardinality of the event alphabet $n$. The number of parallel episodes $N_P(n,m)$ can be calculated in the following way:
 
 \begin{equation}
 	N_P(n,m) = \sum_{i=1}^m {{n+i-1}\choose{n-1}}
@@ -326,11 +320,11 @@ Since events of the same type can occur multiple times in episodes, the number o
 The argument is simple: For each length $i$ we draw $i$ events from an urn of size $n$ (which is $\Sigma$) with replacement, but without being interested in the order, which leads to exactly ${n+i-1}\choose{n-1}$ possibilities. To get all patterns up to length $m$, we simply sum up the individual terms. The number of serial episodes $N_S(n,m)$ can be calculated in the following way:
 
 \begin{equation}
-	N_P(n,m) = \sum_{i=1}^m n^i
+	N_S(n,m) = \sum_{i=1}^m n^i
 \end{equation}
 
 Serial episodes are formed in the same way, except that now the order matters, which means that this is equal to the problem of drawing $i$ events from an urn of size $n$ with replacement with being interested in the order, which means that there are $n^i$ combinations. Once again we sum over all lengths to obtain the complete number of patterns. \\
-Such a formula is more difficult to find for composite episodes, since the different orderings and number of orderings are dificult to enumerate. In their paper about mining composite episodes Baathorn et. al. \cite{bathoorn2007finding} provide a formula for the number of composite episodes $N_C(n,m)$:
+Such a formula is more difficult to find for composite episodes, since the different orderings and number of orderings are dificult to enumerate. In their paper about mining composite episodes Baathorn et al. \cite{bathoorn2007finding} provide a formula for the number of composite episodes $N_C(n,m)$:
 
 \begin{equation}
 \label{eq_numComposite}
