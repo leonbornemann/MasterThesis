@@ -13,7 +13,7 @@ This chapter describes the steps taken to implement the algorithms presented in 
 \section{Choice of Programming language}
 While the algorithms can in theory be implemented in any programming language the programming language has, apart from personal preferences, implications on the usability of the algorithms. As a language java was chosen, due to the following reasons: There are multiple useful streaming and machine learning frameworks such as Apache Spark \cite{meng2016mllib} or Apache Flink \cite{carbone2015apache} which are also available for java. This means that the frameworks can be used in the implementation, eliminating the need to re-implement functionality like feature-based classifiers or build interfaces to other programming languages that provide such functionality (like R). Future Work can integrate the algorithms into the stream processing frameworks in order to make use of the scalability of their architecture.
 
-\section{The implementation}
+\section{The Implementation}
 
 The algorithms were implemented as an eclipse Mars project using java 8. Dependencies to other projects are handled via the build-tool Maven. 
 
@@ -47,7 +47,7 @@ In the following the packages and subpackages are listed and briefly described.
 		\item \textbf{prediction.training} contains classes that extract training examples and provide utilities for model training
 		\item \textbf{prediction.models} contains the model classes for all types of predictive models
 	\end{itemize}		
-	\item \textbf{semantics} contains all functionality to access the dbpedia \cite{auer2007dbpedia} or provide semantic knowledge in other forms.
+	\item \textbf{semantics} contains all functionality to access the Dbpedia \cite{auer2007dbpedia} or provide semantic knowledge in other forms.
 	\item \textbf{util} contains utility classes such as standard formatters and helpful IO functionality.
 \end{itemize}
 
@@ -67,16 +67,16 @@ The interactions between the classes are best explained separately for model tra
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{classDiagramTraining}
-	\caption{Class diagram of the most important classes during the training of predictive models.}
+	\caption[Class Diagram: Training Phase]{Class diagram of the most important classes during the training of predictive models.}
 	\label{fig_classDiagramTraining}
 \end{figure}
 
-The central class is called \textit{EpisodeDiscovery}, which makes use of the \textit{WindowMiner} to obtain the training examples, which it then provides as input to the pattern miners. In addition to the training examples the pattern miners requires
+The central class is called \textit{EpisodeDiscovery}, which makes use of the \textit{WindowMiner} to obtain the training examples, which it then provides as input to the pattern miners. In addition to the training examples the pattern miners requires:
 
 \begin{itemize}
-	\item a candidate generator, meaning either a \textit{ParallelEpisodePatternGenerator} or a \textit{SerialEpisodePatternGenerator}
-	\item the \textit{EpisodeTrie} as a data structure to efficiently store episodes (see section \ref{sec_episodeTrie} for a detailed explanation)
-	\item a deterministic finite automaton for each episode in order to recognize it in the windows of the stream. 
+	\item A candidate generator, meaning either a \textit{ParallelEpisodePatternGenerator} or a \textit{SerialEpisodePatternGenerator}
+	\item The \textit{EpisodeTrie} as a data structure to efficiently store episodes (see section \ref{sec_episodeTrie} for a detailed explanation)
+	\item A deterministic finite automaton for each episode in order to recognize it in the windows of the stream. 
 \end{itemize}
 
 Note that there are general interfaces provided, whose concrete implementations will be chosen depending on which kind of episodes are supposed to be mined (either serial or parallel). The main class interactions during the evaluation of the models is visualized in figure \ref{fig_classDiagram1}.
@@ -84,11 +84,11 @@ Note that there are general interfaces provided, whose concrete implementations 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{classDiagram1}
-	\caption{Class diagram of the most important classes during the evaluation of predictive models.}
+	\caption[Class Diagram: Test Phase]{Class diagram of the most important classes during the evaluation of predictive models.}
 	\label{fig_classDiagram1}
 \end{figure}
 
-In order to evaluate constructed models, the \textit{ExperimentExecutor}-class plays the central role. It makes use of the configuration to properly initialize the models and uses the \textit{StreamWindowSlider}-class to iterate over the different stream windows of the underlying categorical event stream. Both model classes use the mined episode patterns to compute their predictions. Once again there are multiple implementations of some interfaces, allowing either for the stream to be kept in memory or be continuously read from files as well as the time windows to be fixed or slidable. 
+In order to evaluate constructed models, the \textit{ExperimentExecutor}-class plays the central role. It makes use of the configuration to properly initialize the models and uses the \textit{StreamWindowSlider}-class to iterate over the different stream windows of the underlying categorical event stream. Both model classes use the mined episode patterns to compute their predictions. Once again there are multiple implementations of some interfaces, allowing either for the stream to be kept in memory or to be continuously read from files as well as for the time windows to be fixed or slidable. 
 
 \section{Efficient Episode Storage}
 \label{sec_episodeTrie}
@@ -98,7 +98,7 @@ There are two types of tries: Tries for parallel episodes and tries for serial e
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=0.75\textwidth]{trieExample}
-	\caption{An example of an episode trie storing serial episodes. The yellow nodes are the nodes of the trie, each one is representing an episode. The green boxes represent the value associated with that episode, which could for example be the frequency as returned by the counting algorithms.}
+	\caption[Episode Trie for Serial Episodes]{An example of an episode trie storing serial episodes. The yellow nodes are the nodes of the trie, each one is representing an episode. The green boxes represent the value associated with that episode, which could for example be the frequency as returned by the counting algorithms.}
 	\label{fig_trieExample}
 \end{figure}
 
